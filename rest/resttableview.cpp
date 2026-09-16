@@ -249,18 +249,26 @@ void RestTableView::resizeToContents()
     if (!model()) return;
     int n=model()->columnCount();
     int m=model()->rowCount();
+    QMap<int,int> mapWidth;
     if (restRoModel){
         for (int i=0; i<n; i++){
             colInfo inf = restRoModel->columnInfo(i);
-            if (!isColumnHidden(i) && inf.width.toInt()<0){
-                this->setColumnHidden(i,true);
+            int width = inf.width.toInt();
+            bool is_hidden = width<0;
+            if (width>0){
+                mapWidth.insert(i,width);
             }
+            this->setColumnHidden(i,is_hidden);
         }
     }
     int max=0;
     QStringList l;
     QString s;
     for (int i=0; i<n; i++){
+        if (mapWidth.contains(i)){
+            setColumnWidth(i,mapWidth.value(i));
+            continue;
+        }
         s=model()->headerData(i,Qt::Horizontal).toString();
         l=s.split("\n");
         max=0;

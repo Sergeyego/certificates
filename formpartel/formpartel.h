@@ -3,10 +3,20 @@
 
 #include <QWidget>
 #include "rest/resttablemodel.h"
+#include "rest/restrotablemodel.h"
 
 namespace Ui {
 class FormPartEl;
 }
+
+class ModelPart : public RestRoTableModel
+{
+    Q_OBJECT
+public:
+    explicit ModelPart(QObject *parent = nullptr);
+    void refresh(QDate beg, QDate end, int id_el=-1, QString diam="");
+
+};
 
 class FormPartEl : public QWidget
 {
@@ -20,9 +30,11 @@ private:
     Ui::FormPartEl *ui;
     void loadSettings();
     void saveSettings();
+    ModelPart *modelPart;
 
 private slots:
     void upd();
+    void updFinished();
 
 };
 
