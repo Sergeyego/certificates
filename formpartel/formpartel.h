@@ -31,10 +31,21 @@ private:
     void loadSettings();
     void saveSettings();
     ModelPart *modelPart;
+    RestRoTableModel *modelTu;
+    RestRoTableModel *modelNote;
+    RestRoTableModel *modelShip;
+    RestTableModel *modelChemSrc;
+    RestTableModel *modelMechSrc;
+    RestTableModel *modelChem;
+    RestTableModel *modelMech;
+    RestTableModel *modelMechx;
 
 private slots:
+    void enPrimSave();
     void upd();
     void updFinished();
+    void updNoteFinished();
+    void updData(QModelIndex index);
 
 };
 

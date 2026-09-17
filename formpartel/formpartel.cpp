@@ -18,6 +18,34 @@ FormPartEl::FormPartEl(QWidget *parent)
 
     ui->comboBoxMark->setModel(RelModels::instance()->getModel("mark"));
 
+    modelTu = new RestRoTableModel(this);
+    ui->listViewTu->setModel(modelTu);
+
+    modelNote = new RestRoTableModel(this);
+
+    modelShip = new RestRoTableModel(this);
+    ui->tableViewShip->setModel(modelShip);
+
+    modelChemSrc = new RestTableModel("el_parti_chem",this);
+    modelChemSrc->setPath("api/elrtr/lab/chem/parti");
+    modelChemSrc->setDefaultValue("id_dev",1);
+    ui->tableViewChemSrc->setModel(modelChemSrc);
+
+    modelMechSrc = new RestTableModel("el_parti_mech",this);
+    modelMechSrc->setPath("api/elrtr/lab/mech/parti");
+    ui->tableViewMechSrc->setModel(modelMechSrc);
+
+    modelChem = new RestTableModel("el_sert_chem",this);
+    modelChem->setPath("api/elrtr/lab/chem/sert");
+    ui->tableViewChem->setModel(modelChem);
+
+    modelMech = new RestTableModel("el_sert_mech",this);
+    modelMech->setPath("api/elrtr/lab/mech/sert");
+    ui->tableViewMech->setModel(modelMech);
+
+    modelMechx = new RestTableModel("el_sert_mechx",this);
+    ui->tableViewMechx->setModel(modelMechx);
+
     modelPart = new ModelPart(this);
     ui->tableViewPart->setModel(modelPart);
 
@@ -28,6 +56,10 @@ FormPartEl::FormPartEl(QWidget *parent)
     connect(ui->checkBoxMarkOnly,SIGNAL(clicked(bool)),ui->comboBoxMark,SLOT(setEnabled(bool)));
     connect(ui->checkBoxMarkOnly,SIGNAL(clicked(bool)),ui->lineEditDiam,SLOT(setEnabled(bool)));
     connect(modelPart,SIGNAL(sigRefresh()),this,SLOT(updFinished()));
+    connect(ui->tableViewPart->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(updData(QModelIndex)));
+    connect(modelNote,SIGNAL(sigRefresh()),this,SLOT(updNoteFinished()));
+    connect(ui->plainTextEditPrim,SIGNAL(textChanged()),this,SLOT(enPrimSave()));
+    connect(ui->plainTextEditPrimProd,SIGNAL(textChanged()),this,SLOT(enPrimSave()));
 
     upd();
 }
@@ -50,6 +82,11 @@ void FormPartEl::saveSettings()
     settings.setValue("part_el_splitter_width",ui->splitter->saveState());
 }
 
+void FormPartEl::enPrimSave()
+{
+    ui->pushButtonSave->setEnabled(true);
+}
+
 void FormPartEl::upd()
 {
     int id_el=-1;
@@ -68,6 +105,54 @@ void FormPartEl::updFinished()
         ui->tableViewPart->selectRow(ui->tableViewPart->model()->rowCount()-1);
         ui->tableViewPart->scrollToBottom();
     }
+}
+
+void FormPartEl::updNoteFinished()
+{
+    if (modelNote->rowCount()){
+        ui->plainTextEditPrim->setPlainText(modelNote->getModelData(0,"prim").toString());
+        ui->plainTextEditPrimProd->setPlainText(modelNote->getModelData(0,"prim_prod").toString());
+        ui->checkBoxOk->setChecked(modelNote->getModelData(0,"ok").toBool());
+    } else {
+        ui->plainTextEditPrim->clear();
+        ui->plainTextEditPrimProd->clear();
+        ui->checkBoxOk->setChecked(false);
+    }
+    ui->pushButtonSave->setEnabled(false);
+}
+
+void FormPartEl::updData(QModelIndex index)
+{
+    int id_part = modelPart->getModelData(index.row(),"id").toInt();
+
+    modelTu->setPath("api/elrtr/parti/tu/"+QString::number(id_part));
+    modelTu->select();
+
+    modelNote->setPath("api/elrtr/parti/note/"+QString::number(id_part));
+    modelNote->select();
+
+    modelShip->setPath("api/elrtr/parti/ship/"+QString::number(id_part));
+    modelShip->select();
+
+    modelChemSrc->setFilter(modelChemSrc->tableName()+".id_part = "+QString::number(id_part));
+    modelChemSrc->setDefaultValue("id_part",id_part);
+    modelChemSrc->select();
+
+    modelChem->setFilter(modelChem->tableName()+".id_part = "+QString::number(id_part));
+    modelChem->setDefaultValue("id_part",id_part);
+    modelChem->select();
+
+    modelMechSrc->setFilter(modelMechSrc->tableName()+".id_part = "+QString::number(id_part));
+    modelMechSrc->setDefaultValue("id_part",id_part);
+    modelMechSrc->select();
+
+    modelMech->setFilter(modelMech->tableName()+".id_part = "+QString::number(id_part));
+    modelMech->setDefaultValue("id_part",id_part);
+    modelMech->select();
+
+    modelMechx->setFilter(modelMechx->tableName()+".id_part = "+QString::number(id_part));
+    modelMechx->setDefaultValue("id_part",id_part);
+    modelMechx->select();
 }
 
 ModelPart::ModelPart(QObject *parent) : RestRoTableModel(parent)
