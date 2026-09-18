@@ -4,6 +4,7 @@
 #include <QWidget>
 #include "rest/resttablemodel.h"
 #include "rest/restrotablemodel.h"
+#include "dialogcopyvalel/dialogcopyvalel.h"
 
 namespace Ui {
 class FormPartEl;
@@ -15,6 +16,10 @@ class ModelPart : public RestRoTableModel
 public:
     explicit ModelPart(QObject *parent = nullptr);
     void refresh(QDate beg, QDate end, int id_el=-1, QString diam="");
+    void refreshState(int index);
+
+private slots:
+    void refreshStateFinished();
 
 };
 
@@ -30,6 +35,8 @@ private:
     Ui::FormPartEl *ui;
     void loadSettings();
     void saveSettings();
+    bool primChanged;
+    bool primProdChanged;
     ModelPart *modelPart;
     RestRoTableModel *modelTu;
     RestRoTableModel *modelNote;
@@ -41,11 +48,18 @@ private:
     RestTableModel *modelMechx;
 
 private slots:
-    void enPrimSave();
+    void onPrimChanged();
+    void onPrimProdChanged();
+    void savePrim();
+    void copyChem();
+    void copyMech();
+    void updCurrentState();
     void upd();
     void updFinished();
     void updNoteFinished();
     void updData(QModelIndex index);
+    void setOk(bool ok);
+    void importVals();
 
 };
 

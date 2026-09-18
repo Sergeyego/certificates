@@ -116,7 +116,7 @@ void RestRoTableModel::setModelData(const QJsonObject &data)
         inf.dec=value.toObject().value("dec").toInt();
         inf.relnam="";
         inf.flags=(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
-        inf.defaultVal=QVariant();
+        inf.defaultVal.val=QVariant();
         inf.width=value.toObject().value("width").toInt();
         _columns.push_back(inf.nam);
         colMap.insert(inf.nam,inf);

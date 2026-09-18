@@ -106,12 +106,14 @@ void RestComboBox::mAboutReset()
 {
     isReset=true;
     saveData=currentData;
+    blockSignals(true);
 }
 
 void RestComboBox::mReset()
 {
     isReset=false;
     setCurrentData(saveData);
+    blockSignals(false);
 }
 
 void RestComboBox::setCurrentData(colVal data)

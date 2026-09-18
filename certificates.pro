@@ -7,6 +7,7 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    dialogcopyvalel/dialogcopyvalel.cpp \
     formpartel/formpartel.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -26,6 +27,7 @@ SOURCES += \
     tabmanager.cpp
 
 HEADERS += \
+    dialogcopyvalel/dialogcopyvalel.h \
     formpartel/formpartel.h \
     mainwindow.h \
     rest/relmodels.h \
@@ -44,6 +46,7 @@ HEADERS += \
     tabmanager.h
 
 FORMS += \
+    dialogcopyvalel/dialogcopyvalel.ui \
     formpartel/formpartel.ui \
     mainwindow.ui \
     rest/restlogin.ui \

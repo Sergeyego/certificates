@@ -196,7 +196,10 @@ void RestTableModel::setInsertable(bool b)
 void RestTableModel::setDefaultValue(QString column, QVariant value)
 {
     if (colMap.contains(column)){
-        colMap[column].defaultVal=value;
+        colVal val;
+        val.val=value;
+        val.disp=formatVal(value,_columns.indexOf(column));
+        colMap[column].defaultVal=val;
     } else {
         qDebug()<<"Not found: "+this->tableName()+" - "+column;
     }
@@ -238,7 +241,7 @@ QVariant RestTableModel::nullValue(int column) const
 QVariant RestTableModel::defaultValue(int column) const
 {
     if (column>=0 && column<columnCount()){
-        return colMap.value(_columns.at(column)).defaultVal;
+        return colMap.value(_columns.at(column)).defaultVal.val;
     } else {
         return QVariant();
     }
@@ -504,7 +507,7 @@ void RestTableModel::loadInfo()
             inf.dec=value.toObject().value("dec").toInt();
             inf.relnam=value.toObject().value("relnam").toString();          
             inf.flags = inf.editable ? (Qt::ItemIsEditable | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled) : (Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
-            inf.defaultVal=nullValue(inf.udt_name);
+            inf.defaultVal.val=nullValue(inf.udt_name);
             inf.width = value.toObject().value("width").toVariant();
             _columns.push_back(inf.nam);
             colMap.insert(inf.nam,inf);
@@ -599,8 +602,9 @@ QVector<cellData> RestTableModel::defaultRow() const
     QVector<cellData> tmpRow;
     for (int i=0; i<columnCount();i++){
         cellData d;
-        d.edit=colMap.value(_columns.at(i)).defaultVal;
-        d.display=formatVal(d.edit,i);
+        colVal val=colMap.value(_columns.at(i)).defaultVal;
+        d.edit=val.val;
+        d.display=val.disp;
         d.background=QColor(255,255,255);
         tmpRow.push_back(d);
     }

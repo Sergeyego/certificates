@@ -421,7 +421,7 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_7">
          <item>
-          <widget class="QPushButton" name="pushButton_3">
+          <widget class="QPushButton" name="pushButtonImport">
            <property name="text">
             <string>Импортировать значения</string>
            </property>
@@ -441,21 +441,21 @@
           </spacer>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton_4">
+          <widget class="QPushButton" name="pushButtonPasport">
            <property name="text">
             <string>Паспорт</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton_5">
+          <widget class="QPushButton" name="pushButtonLabel">
            <property name="text">
             <string>Этикетка</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton_6">
+          <widget class="QPushButton" name="pushButtonSert">
            <property name="text">
             <string>Сертификат</string>
            </property>

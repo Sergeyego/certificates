@@ -33,8 +33,10 @@ private slots:
     void processNextRequest();
     void onResult();
 
-private:
+protected:
     QVector<QVector<cellData>> modelData;
+
+private:
     QMap<QString,colInfo> colMap;
     QString _path;
     QString _title;

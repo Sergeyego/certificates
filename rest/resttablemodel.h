@@ -35,7 +35,7 @@ struct colInfo {
     int dec;
     QString relnam;
     Qt::ItemFlags flags;
-    QVariant defaultVal;
+    colVal defaultVal;
     QVariant width;
 };
 
