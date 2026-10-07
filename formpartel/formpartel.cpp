@@ -238,23 +238,23 @@ void FormPartEl::updData(QModelIndex index)
     modelShip->setPath("api/elrtr/parti/ship/"+QString::number(id_part));
     modelShip->select();
 
-    modelChemSrc->setFilter(modelChemSrc->tableName()+".id_part = "+QString::number(id_part));
+    modelChemSrc->setFilter(RestFilter::rule(modelChemSrc->tableName(),"id_part",RestFilter::Op::Eq,id_part));
     modelChemSrc->setDefaultValue("id_part",id_part);
     modelChemSrc->select();
 
-    modelChem->setFilter(modelChem->tableName()+".id_part = "+QString::number(id_part));
+    modelChem->setFilter(RestFilter::rule(modelChem->tableName(),"id_part",RestFilter::Op::Eq,id_part));
     modelChem->setDefaultValue("id_part",id_part);
     modelChem->select();
 
-    modelMechSrc->setFilter(modelMechSrc->tableName()+".id_part = "+QString::number(id_part));
+    modelMechSrc->setFilter(RestFilter::rule(modelMechSrc->tableName(),"id_part",RestFilter::Op::Eq,id_part));
     modelMechSrc->setDefaultValue("id_part",id_part);
     modelMechSrc->select();
 
-    modelMech->setFilter(modelMech->tableName()+".id_part = "+QString::number(id_part));
+    modelMech->setFilter(RestFilter::rule(modelMech->tableName(),"id_part",RestFilter::Op::Eq,id_part));
     modelMech->setDefaultValue("id_part",id_part);
     modelMech->select();
 
-    modelMechx->setFilter(modelMechx->tableName()+".id_part = "+QString::number(id_part));
+    modelMechx->setFilter(RestFilter::rule(modelMechx->tableName(),"id_part",RestFilter::Op::Eq,id_part));
     modelMechx->setDefaultValue("id_part",id_part);
     modelMechx->select();
 }
