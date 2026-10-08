@@ -3,7 +3,10 @@
 
 #include <QAbstractTableModel>
 #include <QObject>
+#include <QApplication>
+#include <QMessageBox>
 #include "rest/resttablemodel.h"
+#include "rest/resttypes.h"
 
 class RestRoTableModel : public QAbstractTableModel
 {

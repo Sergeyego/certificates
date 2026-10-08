@@ -138,7 +138,7 @@ bool RestConnection::sendSyncRequest(QString path, QString req, const QByteArray
     respData=reply->readAll();
     bool ok=(reply->error()==QNetworkReply::NoError);
     if (!ok){
-        QMessageBox::critical(nullptr,tr("Ошибка"),reply->errorString()+"\n"+respData,QMessageBox::Cancel);
+        QMessageBox::critical(QApplication::activeWindow(),tr("Ошибка"),reply->errorString()+"\n"+respData,QMessageBox::Cancel);
     }
     reply->deleteLater();
     return ok;

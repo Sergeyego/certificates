@@ -17,7 +17,7 @@ protected:
 
 public:
     static RelModels *instance();
-    RestRelModel* getModel(QString name);
+    RestRelModel* getModel(const QString &name);
     ~RelModels();
     void updateRels(QVector<RestTableModel*> models);
 public slots:

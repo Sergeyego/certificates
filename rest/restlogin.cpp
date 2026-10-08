@@ -46,7 +46,7 @@ void RestLogin::onResult()
         return;
     }
     if (reply->error()!=QNetworkReply::NoError){
-        QMessageBox::critical(nullptr,tr("Ошибка"),reply->errorString()+"\n"+reply->readAll(),QMessageBox::Cancel);
+        QMessageBox::critical(QApplication::activeWindow(),tr("Ошибка"),reply->errorString()+"\n"+reply->readAll(),QMessageBox::Cancel);
     } else {
         QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
         QString token = doc.object().value("token").toString();
@@ -58,7 +58,7 @@ void RestLogin::onResult()
         if (!token.isEmpty()){
             this->accept();
         } else {
-            QMessageBox::critical(nullptr,tr("Ошибка"),tr("Токен не получен."),QMessageBox::Cancel);
+            QMessageBox::critical(QApplication::activeWindow(),tr("Ошибка"),tr("Токен не получен."),QMessageBox::Cancel);
         }
     }
     reply->deleteLater();

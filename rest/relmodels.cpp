@@ -16,12 +16,13 @@ RelModels *RelModels::instance()
     return relModels_instance.get(); // Возвращает обычный указатель RestRelModel*
 }
 
-RestRelModel *RelModels::getModel(QString name)
+RestRelModel *RelModels::getModel(const QString &name)
 {
     if (!map.contains(name)){
         RestRelModel *model = new RestRelModel(name,this);
         model->refresh();
         map.insert(name, model);
+        return model;
     }
     return map.value(name, nullptr);
 }

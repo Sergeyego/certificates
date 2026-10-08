@@ -148,8 +148,7 @@ bool RestTableModel::removeRow(int row, const QModelIndex &parent)
         }
         dat+=data(this->index(row,i),Qt::DisplayRole).toString();
     }
-    int n=QMessageBox::question(nullptr,QString::fromUtf8("Подтвердите удаление"),
-                                  QString::fromUtf8("Подтверждаете удаление ")+dat+QString::fromUtf8("?"),QMessageBox::Yes| QMessageBox::No);
+    int n=QMessageBox::question(QApplication::activeWindow(),tr("Подтвердите удаление"),tr("Подтверждаете удаление ")+dat+"?",QMessageBox::Yes| QMessageBox::No);
     bool ok=false;
     if (n==QMessageBox::Yes) {
         if (apiDelete(row)) {
@@ -425,7 +424,7 @@ void RestTableModel::onResult()
     if (netError != QNetworkReply::NoError) {
         clear();
         emit sigRefresh();
-        QMessageBox::critical(nullptr, tr("Ошибка сети"), reply->errorString() + "\n" + data, QMessageBox::Cancel);
+        QMessageBox::critical(QApplication::activeWindow(), tr("Ошибка сети"), reply->errorString() + "\n" + data, QMessageBox::Cancel);
         processNextRequest();
         return;
     }
@@ -440,7 +439,7 @@ void RestTableModel::onResult()
         emit sigRefresh();
         QString errorString = tr("Ошибка JSON: ") + jsonError.errorString() +
                               tr("\nПозиция: ") + QString::number(jsonError.offset);
-        QMessageBox::critical(nullptr, tr("Ошибка данных"), errorString, QMessageBox::Cancel);
+        QMessageBox::critical(QApplication::activeWindow(), tr("Ошибка данных"), errorString, QMessageBox::Cancel);
         processNextRequest();
         return;
     }
@@ -785,6 +784,9 @@ QString RestTableModel::formatVal(const QVariant &val, int column) const
     }
     case QMetaType::QDateTime: {
         return val.toDateTime().toString("dd.MM.yyyy, HH:mm");
+    }
+    case QMetaType::QByteArray: {
+        return val.toByteArray().isEmpty() ? "" : QString("<%1 байт>").arg(val.toByteArray().size());
     }
     default: {
         return val.toString();

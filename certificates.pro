@@ -44,6 +44,7 @@ HEADERS += \
     rest/resttabledialog.h \
     rest/resttablemodel.h \
     rest/resttableview.h \
+    rest/resttypes.h \
     rest/tempfilemanager.h \
     tabmanager.h
 
