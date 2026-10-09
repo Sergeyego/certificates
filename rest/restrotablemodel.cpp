@@ -93,6 +93,7 @@ colInfo RestRoTableModel::columnInfo(int col) const
 
 QMetaType::Type RestRoTableModel::columnType(int col) const
 {
+    if (col < 0 || col >= _columns.size()) return QMetaType::QString;
     return RestTableModel::getMetaType(colMap.value(_columns.at(col)).udt_name);
 }
 

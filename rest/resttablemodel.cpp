@@ -244,6 +244,7 @@ QVariant RestTableModel::nullValue(const QString &udt_name)
 
 QVariant RestTableModel::nullValue(int column) const
 {
+    if (column < 0 || column >= _columns.size()) return QVariant();
     return nullValue(colMap.value(_columns.at(column)).udt_name);
 }
 
@@ -281,6 +282,7 @@ bool RestTableModel::setHeaderData(int section, Qt::Orientation orientation, con
 
 QMetaType::Type RestTableModel::columnType(int col) const
 {
+    if (col < 0 || col >= _columns.size()) return QMetaType::QString;
     return getMetaType(colMap.value(_columns.at(col)).udt_name);
 }
 
