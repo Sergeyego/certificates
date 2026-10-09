@@ -355,7 +355,7 @@ void RestTableModel::select()
 {
     QUrl url = QUrl(RestConnection::instance()->getUrl() + "/" + _path);
     QUrlQuery query;
-    query.addQueryItem("filterobj", _filter.toJsonStringIfValid());
+    query.addQueryItem("filterobj", _filter.toJsonString());
     url.setQuery(query);
 
     queue.enqueue(url);
@@ -368,7 +368,7 @@ void RestTableModel::selectSync()
 {
     QByteArray data;
     QUrlQuery query;
-    query.addQueryItem("filterobj",_filter.toJsonStringIfValid());
+    query.addQueryItem("filterobj",_filter.toJsonString());
     bool ok = RestConnection::instance()->sendSyncGet(_path+"?"+query.toString(),data);
     if (ok){
         QJsonDocument doc = QJsonDocument::fromJson(data);
