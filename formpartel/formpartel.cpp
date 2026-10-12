@@ -91,7 +91,7 @@ void FormPartEl::saveSettings()
 
 void FormPartEl::savePrim()
 {
-    if (!(primChanged || primChanged)){
+    if (!(primChanged || primProdChanged)){
         ui->pushButtonSave->setEnabled(false);
         return;
     }
