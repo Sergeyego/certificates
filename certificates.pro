@@ -1,4 +1,4 @@
-QT += widgets network
+QT += widgets network printsupport
 
 CONFIG += c++17
 
@@ -8,6 +8,7 @@ CONFIG += c++17
 
 SOURCES += \
     dialogcopyvalel/dialogcopyvalel.cpp \
+    dialoglabels/dialoglabels.cpp \
     formpartel/formpartel.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -29,6 +30,7 @@ SOURCES += \
 
 HEADERS += \
     dialogcopyvalel/dialogcopyvalel.h \
+    dialoglabels/dialoglabels.h \
     formpartel/formpartel.h \
     mainwindow.h \
     rest/relmodels.h \
@@ -50,6 +52,7 @@ HEADERS += \
 
 FORMS += \
     dialogcopyvalel/dialogcopyvalel.ui \
+    dialoglabels/dialoglabels.ui \
     formpartel/formpartel.ui \
     mainwindow.ui \
     rest/restlogin.ui \

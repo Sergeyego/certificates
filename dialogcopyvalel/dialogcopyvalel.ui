@@ -27,16 +27,28 @@
        <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
       </property>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="RestTableView" name="tableViewChem"/>
+        <widget class="RestTableView" name="tableViewChem">
+         <property name="editTriggers">
+          <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+         </property>
+        </widget>
        </item>
        <item>
-        <widget class="RestTableView" name="tableViewMech"/>
+        <widget class="RestTableView" name="tableViewMech">
+         <property name="editTriggers">
+          <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+         </property>
+        </widget>
        </item>
        <item>
-        <widget class="RestTableView" name="tableViewMechx"/>
+        <widget class="RestTableView" name="tableViewMechx">
+         <property name="editTriggers">
+          <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>

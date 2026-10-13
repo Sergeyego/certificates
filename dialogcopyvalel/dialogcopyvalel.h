@@ -16,14 +16,19 @@ class DialogCopyValEl : public QDialog
 public:
     explicit DialogCopyValEl(int id_part_src, QWidget *parent = nullptr);
     ~DialogCopyValEl();
+    int currentIdPart();
 
 private:
     Ui::DialogCopyValEl *ui;
     RestRoTableModel *modelPart;
+    RestTableModel *modelChem;
+    RestTableModel *modelMech;
+    RestTableModel *modelMechx;
 
 private slots:
 
     void updFinished();
+    void updData(QModelIndex index);
 };
 
 #endif // DIALOGCOPYVALEL_H

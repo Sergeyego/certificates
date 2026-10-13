@@ -67,6 +67,7 @@ FormPartEl::FormPartEl(QWidget *parent)
     connect(modelChem,SIGNAL(sigUpd()),this,SLOT(updCurrentState()));
     connect(modelMech,SIGNAL(sigUpd()),this,SLOT(updCurrentState()));
     connect(ui->pushButtonImport,SIGNAL(clicked(bool)),this,SLOT(importVals()));
+    connect(ui->pushButtonLabel,SIGNAL(clicked(bool)),this,SLOT(showLabels()));
 
     upd();
 }
@@ -89,14 +90,39 @@ void FormPartEl::saveSettings()
     settings.setValue("part_el_splitter_width",ui->splitter->saveState());
 }
 
+void FormPartEl::setBlock(bool b)
+{
+    ui->tableViewChem->setEnabled(!b);
+    ui->tableViewChemSrc->setEnabled(!b);
+    ui->tableViewMech->setEnabled(!b);
+    ui->tableViewMechSrc->setEnabled(!b);
+    ui->tableViewMechx->setEnabled(!b);
+    ui->plainTextEditPrim->setEnabled(!b);
+    ui->plainTextEditPrimProd->setEnabled(!b);
+    ui->checkBoxOk->setEnabled(!b);
+    ui->toolButtonChem->setEnabled(!b);
+    ui->toolButtonMech->setEnabled(!b);
+    ui->pushButtonImport->setEnabled(!b);
+    ui->pushButtonLabel->setEnabled(!b);
+    ui->pushButtonPasport->setEnabled(!b);
+    ui->pushButtonSave->setEnabled(!b);
+    ui->pushButtonSert->setEnabled(!b);
+}
+
 void FormPartEl::savePrim()
 {
+
     if (!(primChanged || primProdChanged)){
         ui->pushButtonSave->setEnabled(false);
         return;
     }
 
     int currentIndex = ui->tableViewPart->currentIndex().row();
+    if (!modelPart->rowCount() || currentIndex < 0) {
+        ui->pushButtonSave->setEnabled(false);
+        return;
+    }
+
     int id_part = modelPart->getModelData(currentIndex,"id").toInt();
 
     QByteArray data;
@@ -122,13 +148,17 @@ void FormPartEl::savePrim()
 
 void FormPartEl::copyChem()
 {
+    int currentIndex = ui->tableViewPart->currentIndex().row();
+    if (!modelPart->rowCount() || currentIndex < 0) {
+        return;
+    }
+
     if (!modelChem->isEmpty()){
         QMessageBox::information(this,tr("Предупреждение"),tr("Сначала удалите все уже существующие элементы!"),QMessageBox::Ok);
         return;
     }
     int n=QMessageBox::question(this,tr("Подтвердите действия"),tr("Сгенерировать значения на основе испытаний и похожих партий?"),QMessageBox::Yes,QMessageBox::No);
     if (n==QMessageBox::Yes){
-        int currentIndex = ui->tableViewPart->currentIndex().row();
         int id_part = modelPart->getModelData(currentIndex,"id").toInt();
         QByteArray body, data;
 
@@ -142,13 +172,16 @@ void FormPartEl::copyChem()
 
 void FormPartEl::copyMech()
 {
+    int currentIndex = ui->tableViewPart->currentIndex().row();
+    if (!modelPart->rowCount() || currentIndex < 0) {
+        return;
+    }
     if (!modelMech->isEmpty()){
         QMessageBox::information(this,tr("Предупреждение"),tr("Сначала удалите все уже существующие элементы!"),QMessageBox::Ok);
         return;
     }
     int n=QMessageBox::question(this,tr("Подтвердите действия"),tr("Сгенерировать значения на основе испытаний и похожих партий?"),QMessageBox::Yes,QMessageBox::No);
     if (n==QMessageBox::Yes){
-        int currentIndex = ui->tableViewPart->currentIndex().row();
         int id_part = modelPart->getModelData(currentIndex,"id").toInt();
         QByteArray body, data;
 
@@ -163,6 +196,9 @@ void FormPartEl::copyMech()
 void FormPartEl::updCurrentState()
 {
     int currentIndex = ui->tableViewPart->currentIndex().row();
+    if (currentIndex < 0) {
+        return;
+    }
     modelPart->refreshState(currentIndex);
 }
 
@@ -203,10 +239,21 @@ void FormPartEl::upd()
 void FormPartEl::updFinished()
 {
     //qDebug()<<"upd finished";
-    if (ui->tableViewPart->model()->rowCount()){
+    bool ok = ui->tableViewPart->model()->rowCount();
+    if (ok){
         ui->tableViewPart->selectRow(ui->tableViewPart->model()->rowCount()-1);
         ui->tableViewPart->scrollToBottom();
+    } else {
+        modelTu->clear();
+        modelNote->clear();
+        modelShip->clear();
+        modelChemSrc->clear();
+        modelChem->clear();
+        modelMechSrc->clear();
+        modelMech->clear();
+        modelMechx->clear();
     }
+    setBlock(!ok);
 }
 
 void FormPartEl::updNoteFinished()
@@ -227,7 +274,7 @@ void FormPartEl::updNoteFinished()
 
 void FormPartEl::updData(QModelIndex index)
 {
-    int id_part = modelPart->getModelData(index.row(),"id").toInt();
+    int id_part = (index.row()>=0) ? modelPart->getModelData(index.row(),"id").toInt() : -1;
 
     modelTu->setPath("api/elrtr/parti/tu/"+QString::number(id_part));
     modelTu->select();
@@ -262,6 +309,11 @@ void FormPartEl::updData(QModelIndex index)
 void FormPartEl::setOk(bool ok)
 {
     int currentIndex = ui->tableViewPart->currentIndex().row();
+    if (!modelPart->rowCount() || currentIndex < 0) {
+        ui->checkBoxOk->setChecked(!ok);
+        return;
+    }
+
     int id_part = modelPart->getModelData(currentIndex,"id").toInt();
 
     QByteArray data;
@@ -284,17 +336,47 @@ void FormPartEl::setOk(bool ok)
 
 void FormPartEl::importVals()
 {
-    if (!modelPart->rowCount()){
+    int currentIndex = ui->tableViewPart->currentIndex().row();
+    if (!modelPart->rowCount() || currentIndex<0){
         return;
     }
 
-    int currentIndex = ui->tableViewPart->currentIndex().row();
     int id_part = modelPart->getModelData(currentIndex,"id").toInt();
 
     DialogCopyValEl d(id_part);
     if (d.exec()==QDialog::Accepted){
+        int id_part_src=d.currentIdPart();
+        if (id_part_src>0){
 
+            QByteArray data;
+
+            QJsonDocument doc;
+            QJsonObject object
+                {
+                    {"id_part_src", id_part_src}
+                };
+            doc.setObject(object);
+            QByteArray body=doc.toJson();
+
+            RestConnection::instance()->sendSyncRequest("api/elrtr/parti/importval/"+QString::number(id_part),"POST",body,data);
+            modelChem->select();
+            modelMech->select();
+            modelMechx->select();
+            updCurrentState();
+        }
     }
+}
+
+void FormPartEl::showLabels()
+{
+    int currentIndex = ui->tableViewPart->currentIndex().row();
+    if (!modelPart->rowCount() || currentIndex < 0) {
+        return;
+    }
+    int id_part = modelPart->getModelData(currentIndex,"id").toInt();
+    DialogLabels d;
+    d.setLabel("api/elrtr/labels",id_part);
+    d.exec();
 }
 
 ModelPart::ModelPart(QObject *parent) : RestRoTableModel(parent)

@@ -5,6 +5,7 @@
 #include "rest/resttablemodel.h"
 #include "rest/restrotablemodel.h"
 #include "dialogcopyvalel/dialogcopyvalel.h"
+#include "dialoglabels/dialoglabels.h"
 
 namespace Ui {
 class FormPartEl;
@@ -48,6 +49,7 @@ private:
     RestTableModel *modelMechx;
 
 private slots:
+    void setBlock(bool b);
     void onPrimChanged();
     void onPrimProdChanged();
     void savePrim();
@@ -60,6 +62,7 @@ private slots:
     void updData(QModelIndex index);
     void setOk(bool ok);
     void importVals();
+    void showLabels();
 
 };
 
