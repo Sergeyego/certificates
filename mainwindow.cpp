@@ -28,8 +28,7 @@ void MainWindow::actAction(QAction *a, void (MainWindow::*sl)(), int lev)
         connect(a, &QAction::triggered, this, sl);
         tabManager->actAction(a);
     } else {
-        a->setEnabled(false);
-        a->deleteLater();
+        delete a;
     }
 }
 

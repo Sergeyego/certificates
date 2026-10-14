@@ -16,6 +16,8 @@ FormPartEl::FormPartEl(QWidget *parent)
     ui->dateEditBeg->setDate(QDate(QDate::currentDate().year(),1,1));
     ui->dateEditEnd->setDate(QDate(QDate::currentDate().year(),12,31));
 
+    pasportManager = new PasportManager(this);
+
     ui->comboBoxMark->setModel(RelModels::instance()->getModel("mark"));
 
     modelTu = new RestRoTableModel(this);
@@ -68,6 +70,7 @@ FormPartEl::FormPartEl(QWidget *parent)
     connect(modelMech,SIGNAL(sigUpd()),this,SLOT(updCurrentState()));
     connect(ui->pushButtonImport,SIGNAL(clicked(bool)),this,SLOT(importVals()));
     connect(ui->pushButtonLabel,SIGNAL(clicked(bool)),this,SLOT(showLabels()));
+    connect(ui->pushButtonPasport,SIGNAL(clicked(bool)),this,SLOT(createPasport()));
 
     upd();
 }
@@ -379,6 +382,22 @@ void FormPartEl::showLabels()
     d.exec();
 }
 
+void FormPartEl::createPasport()
+{
+    int currentIndex = ui->tableViewPart->currentIndex().row();
+    if (!modelPart->rowCount() || currentIndex < 0) {
+        return;
+    }
+    DialogAuthor d;
+    if(d.exec()==QDialog::Accepted){
+        int id_part = modelPart->getModelData(currentIndex,"id").toInt();
+        int year = modelPart->getModelData(currentIndex,"dat_part").toDate().year();
+        QString n_s = modelPart->getModelData(currentIndex,"n_s").toString();
+        QString marka = modelPart->getModelData(currentIndex,"marka").toString();
+        pasportManager->getPasport(id_part,n_s+"_"+marka,year,d.getJson());
+    }
+}
+
 ModelPart::ModelPart(QObject *parent) : RestRoTableModel(parent)
 {
 
@@ -410,7 +429,7 @@ void ModelPart::refreshStateFinished()
         QByteArray data=reply->readAll();
         bool ok=(reply->error()==QNetworkReply::NoError);
         if (!ok){
-            QMessageBox::critical(nullptr,tr("Ошибка"),reply->errorString()+"\n"+data,QMessageBox::Cancel);
+            QMessageBox::critical(QApplication::activeWindow(),tr("Ошибка"),reply->errorString()+"\n"+data,QMessageBox::Cancel);
         } else {
             QJsonDocument doc = QJsonDocument::fromJson(data);
             QColor color = QColor(doc.object().value("color").toString());

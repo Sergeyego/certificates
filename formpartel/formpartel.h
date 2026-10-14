@@ -6,6 +6,8 @@
 #include "rest/restrotablemodel.h"
 #include "dialogcopyvalel/dialogcopyvalel.h"
 #include "dialoglabels/dialoglabels.h"
+#include "dialogauthor/dialogauthor.h"
+#include "pasportmanager.h"
 
 namespace Ui {
 class FormPartEl;
@@ -38,6 +40,7 @@ private:
     void saveSettings();
     bool primChanged;
     bool primProdChanged;
+    PasportManager *pasportManager;
     ModelPart *modelPart;
     RestRoTableModel *modelTu;
     RestRoTableModel *modelNote;
@@ -63,6 +66,7 @@ private slots:
     void setOk(bool ok);
     void importVals();
     void showLabels();
+    void createPasport();
 
 };
 
