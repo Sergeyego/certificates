@@ -8,6 +8,7 @@
 #include "dialoglabels/dialoglabels.h"
 #include "dialogauthor/dialogauthor.h"
 #include "pasportmanager.h"
+#include "certeditor/editor.h"
 
 namespace Ui {
 class FormPartEl;
@@ -50,6 +51,8 @@ private:
     RestTableModel *modelChem;
     RestTableModel *modelMech;
     RestTableModel *modelMechx;
+    Editor *certEditor;
+    CertDocument *certDocument;
 
 private slots:
     void setBlock(bool b);
@@ -66,6 +69,8 @@ private slots:
     void setOk(bool ok);
     void importVals();
     void showLabels();
+    void showPartCertificate();
+    void showShipCertificate(QModelIndex index);
     void createPasport();
 
 };

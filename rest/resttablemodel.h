@@ -91,11 +91,13 @@ private slots:
     void processNextRequest();
     void onResult();
 
+protected:
+    QVector<QVector<cellData>> modelData;
+
 private:
     QQueue<QUrl> queue;
     bool isProcessing;
     DataEditor *editor;
-    QVector<QVector<cellData>> modelData;
     QMap<QString,colInfo> colMap;
     QString _path;
     QString _rname;

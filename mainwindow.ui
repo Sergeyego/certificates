@@ -40,7 +40,7 @@
     <property name="title">
      <string>Отгрузки</string>
     </property>
-    <addaction name="action_3"/>
+    <addaction name="actionShipCert"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -77,7 +77,7 @@
     <string>F2</string>
    </property>
   </action>
-  <action name="action_3">
+  <action name="actionShipCert">
    <property name="text">
     <string>Сертификаты</string>
    </property>

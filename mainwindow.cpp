@@ -9,6 +9,7 @@ MainWindow::MainWindow(QWidget *parent)
     tabManager = new TabManager(ui->tabWidget,this);
 
     actAction(ui->actionPartEl,&MainWindow::newFormPartEl,1);
+    actAction(ui->actionShipCert,&MainWindow::newFormShip,1);
 
     tabManager->loadSettings();
     loadSettings();
@@ -65,5 +66,12 @@ void MainWindow::newFormPartEl()
 {
     if (!tabManager->exist(sender())){
         tabManager->addSubWindow(new FormPartEl(),sender());
+    }
+}
+
+void MainWindow::newFormShip()
+{
+    if (!tabManager->exist(sender())){
+        tabManager->addSubWindow(new FormShip(),sender());
     }
 }

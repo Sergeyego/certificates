@@ -7,10 +7,13 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    certeditor/certdocument.cpp \
+    certeditor/editor.cpp \
     dialogauthor/dialogauthor.cpp \
     dialogcopyvalel/dialogcopyvalel.cpp \
     dialoglabels/dialoglabels.cpp \
     formpartel/formpartel.cpp \
+    formship/formship.cpp \
     main.cpp \
     mainwindow.cpp \
     pasportmanager.cpp \
@@ -31,10 +34,13 @@ SOURCES += \
     tabmanager.cpp
 
 HEADERS += \
+    certeditor/certdocument.h \
+    certeditor/editor.h \
     dialogauthor/dialogauthor.h \
     dialogcopyvalel/dialogcopyvalel.h \
     dialoglabels/dialoglabels.h \
     formpartel/formpartel.h \
+    formship/formship.h \
     mainwindow.h \
     pasportmanager.h \
     rest/relmodels.h \
@@ -55,10 +61,12 @@ HEADERS += \
     tabmanager.h
 
 FORMS += \
+    certeditor/editor.ui \
     dialogauthor/dialogauthor.ui \
     dialogcopyvalel/dialogcopyvalel.ui \
     dialoglabels/dialoglabels.ui \
     formpartel/formpartel.ui \
+    formship/formship.ui \
     mainwindow.ui \
     rest/restlogin.ui \
     rest/resttabledialog.ui

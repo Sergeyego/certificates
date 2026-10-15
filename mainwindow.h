@@ -5,6 +5,7 @@
 #include "tabmanager.h"
 #include "rest/restconnection.h"
 #include "formpartel/formpartel.h"
+#include "formship/formship.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -30,5 +31,6 @@ private:
 
 private slots:
     void newFormPartEl();
+    void newFormShip();
 };
 #endif // MAINWINDOW_H

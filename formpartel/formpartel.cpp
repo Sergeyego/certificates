@@ -13,6 +13,9 @@ FormPartEl::FormPartEl(QWidget *parent)
 
     loadSettings();
 
+    certDocument = new CertDocument(this);
+    certEditor = new Editor(certDocument);
+
     ui->dateEditBeg->setDate(QDate(QDate::currentDate().year(),1,1));
     ui->dateEditEnd->setDate(QDate(QDate::currentDate().year(),12,31));
 
@@ -71,6 +74,8 @@ FormPartEl::FormPartEl(QWidget *parent)
     connect(ui->pushButtonImport,SIGNAL(clicked(bool)),this,SLOT(importVals()));
     connect(ui->pushButtonLabel,SIGNAL(clicked(bool)),this,SLOT(showLabels()));
     connect(ui->pushButtonPasport,SIGNAL(clicked(bool)),this,SLOT(createPasport()));
+    connect(ui->pushButtonCert,SIGNAL(clicked(bool)),this,SLOT(showPartCertificate()));
+    connect(ui->tableViewShip,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(showShipCertificate(QModelIndex)));
 
     upd();
 }
@@ -78,6 +83,7 @@ FormPartEl::FormPartEl(QWidget *parent)
 FormPartEl::~FormPartEl()
 {
     saveSettings();
+    delete certEditor;
     delete ui;
 }
 
@@ -109,7 +115,7 @@ void FormPartEl::setBlock(bool b)
     ui->pushButtonLabel->setEnabled(!b);
     ui->pushButtonPasport->setEnabled(!b);
     ui->pushButtonSave->setEnabled(!b);
-    ui->pushButtonSert->setEnabled(!b);
+    ui->pushButtonCert->setEnabled(!b);
 }
 
 void FormPartEl::savePrim()
@@ -380,6 +386,31 @@ void FormPartEl::showLabels()
     DialogLabels d;
     d.setLabel("api/elrtr/labels",id_part);
     d.exec();
+}
+
+void FormPartEl::showPartCertificate()
+{
+    int currentIndex = ui->tableViewPart->currentIndex().row();
+    if (!modelPart->rowCount() || currentIndex < 0) {
+        return;
+    }
+    int id_part = modelPart->getModelData(currentIndex,"id").toInt();
+    certDocument->build(id_part,-1,"","elrtr");
+    certEditor->show();
+}
+
+void FormPartEl::showShipCertificate(QModelIndex index)
+{
+    int currentIndex = ui->tableViewPart->currentIndex().row();
+    if (!modelPart->rowCount() || currentIndex < 0) {
+        return;
+    }
+    int id_part = modelPart->getModelData(currentIndex,"id").toInt();
+    int id_ship=modelShip->getModelData(index.row(),"id").toInt();
+    if (id_ship>0){
+        certDocument->build(id_part,id_ship,"","elrtr");
+        certEditor->show();
+    }
 }
 
 void FormPartEl::createPasport()

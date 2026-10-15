@@ -11,5 +11,35 @@
         <file>fonts/DroidSerif-BoldItalic.ttf</file>
         <file>fonts/DroidSerif-Italic.ttf</file>
         <file>fonts/DroidSerif-Regular.ttf</file>
+        <file>images/icons/doc.png</file>
+        <file>images/icons/editcopy.png</file>
+        <file>images/icons/editcut.png</file>
+        <file>images/icons/editpaste.png</file>
+        <file>images/icons/editredo.png</file>
+        <file>images/icons/editundo.png</file>
+        <file>images/icons/exportpdf.png</file>
+        <file>images/icons/file.png</file>
+        <file>images/icons/filenew.png</file>
+        <file>images/icons/fileopen.png</file>
+        <file>images/icons/fileprint.png</file>
+        <file>images/icons/filesave.png</file>
+        <file>images/icons/jpg.png</file>
+        <file>images/icons/pdf.png</file>
+        <file>images/icons/png.png</file>
+        <file>images/icons/textbold.png</file>
+        <file>images/icons/textcenter.png</file>
+        <file>images/icons/textitalic.png</file>
+        <file>images/icons/textjustify.png</file>
+        <file>images/icons/textleft.png</file>
+        <file>images/icons/textright.png</file>
+        <file>images/icons/textunder.png</file>
+        <file>images/icons/xls.png</file>
+        <file>images/icons/zoomin.png</file>
+        <file>images/icons/zoomout.png</file>
+        <file>images/bge.png</file>
+        <file>images/bgm.png</file>
+        <file>images/bgr.png</file>
+        <file>images/notok.png</file>
+        <file>images/ok.png</file>
     </qresource>
 </RCC>
