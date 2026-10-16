@@ -8,7 +8,7 @@
 #include "dialoglabels/dialoglabels.h"
 #include "dialogauthor/dialogauthor.h"
 #include "pasportmanager.h"
-#include "certeditor/editor.h"
+#include "certeditor/certeditor.h"
 
 namespace Ui {
 class FormPartEl;
@@ -51,7 +51,7 @@ private:
     RestTableModel *modelChem;
     RestTableModel *modelMech;
     RestTableModel *modelMechx;
-    Editor *certEditor;
+    CertEditor *certEditor;
     CertDocument *certDocument;
 
 private slots:

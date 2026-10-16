@@ -8,7 +8,8 @@ CONFIG += c++17
 
 SOURCES += \
     certeditor/certdocument.cpp \
-    certeditor/editor.cpp \
+    certeditor/certeditor.cpp \
+    certeditor/certprocessor.cpp \
     dialogauthor/dialogauthor.cpp \
     dialogcopyvalel/dialogcopyvalel.cpp \
     dialoglabels/dialoglabels.cpp \
@@ -35,7 +36,8 @@ SOURCES += \
 
 HEADERS += \
     certeditor/certdocument.h \
-    certeditor/editor.h \
+    certeditor/certeditor.h \
+    certeditor/certprocessor.h \
     dialogauthor/dialogauthor.h \
     dialogcopyvalel/dialogcopyvalel.h \
     dialoglabels/dialoglabels.h \
@@ -61,7 +63,7 @@ HEADERS += \
     tabmanager.h
 
 FORMS += \
-    certeditor/editor.ui \
+    certeditor/certeditor.ui \
     dialogauthor/dialogauthor.ui \
     dialogcopyvalel/dialogcopyvalel.ui \
     dialoglabels/dialoglabels.ui \

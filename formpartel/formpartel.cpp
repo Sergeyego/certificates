@@ -14,7 +14,7 @@ FormPartEl::FormPartEl(QWidget *parent)
     loadSettings();
 
     certDocument = new CertDocument(this);
-    certEditor = new Editor(certDocument);
+    certEditor = new CertEditor(certDocument);
 
     ui->dateEditBeg->setDate(QDate(QDate::currentDate().year(),1,1));
     ui->dateEditEnd->setDate(QDate(QDate::currentDate().year(),12,31));

@@ -21,8 +21,10 @@ FormShip::FormShip(QWidget *parent) :
     ui->dateEditBeg->setDate(QDate::currentDate().addDays(-QDate::currentDate().dayOfYear()+1));
     ui->dateEditEnd->setDate(ui->dateEditBeg->date().addYears(1));
 
-    sertificat = new CertDocument(this);
-    editor = new Editor(sertificat,this);
+    processor = new CertProcessor(this);
+
+    certificate = new CertDocument(this);
+    editor = new CertEditor(certificate,this);
     ui->tab_1->layout()->addWidget(editor);
 
     //reader = new Reader(this);
@@ -35,6 +37,9 @@ FormShip::FormShip(QWidget *parent) :
     ui->tableViewShip->setModel(modelShip);
     modelDataShip = new RestRoTableModel(this);
     ui->tableViewShipData->setModel(modelDataShip);
+
+    connect(modelShip,SIGNAL(sigRefresh()),this,SLOT(refreshFinished()));
+    connect(modelDataShip,SIGNAL(sigRefresh()),this,SLOT(refreshDataShipFinished()));
 
     connect(ui->tableViewShip->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(refreshDataShip(QModelIndex)));
     connect(ui->tableViewShipData->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(refreshShipSert(QModelIndex)));
@@ -62,6 +67,22 @@ FormShip::~FormShip()
     delete ui;
 }
 
+QVector<CertJobTask> FormShip::getTack()
+{
+    QVector<CertJobTask> tasks;
+    for (int i=0; i<modelDataShip->rowCount(); i++){
+        CertJobTask job;
+        job.id_part=modelDataShip->getModelData(i,"id_part").toInt();
+        job.id_ship=modelDataShip->getModelData(i,"id").toInt();
+        job.lang=certificate->getLang();
+        job.mapSert=certificate->getMapSert();
+        job.prefix=modelDataShip->getModelData(i,"prefix").toString();
+        job.sertType=certificate->getType();
+        tasks.push_back(job);
+    }
+    return tasks;
+}
+
 void FormShip::loadSettings()
 {
     QSettings settings("szsm", QApplication::applicationName());
@@ -74,46 +95,71 @@ void FormShip::saveSettings()
     settings.setValue("main_splitter_width",ui->splitterVert->saveState());
 }
 
+void FormShip::refresh()
+{
+    if (sender()==ui->cmdUpd){
+        certificate->clearCache();
+    }
+    modelShip->setPath("api/generalship/list/"+ui->dateEditBeg->date().toString("yyyy-MM-dd")+"/"+ui->dateEditEnd->date().toString("yyyy-MM-dd"));
+
+    modelShip->select();
+}
+
+void FormShip::refreshFinished()
+{
+    if (ui->tableViewShip->model()->rowCount()){
+        ui->tableViewShip->selectRow(ui->tableViewShip->model()->rowCount()-1);
+    } else {
+        modelDataShip->clear();
+        certificate->clear();
+    }
+}
+
 void FormShip::refreshDataShip(QModelIndex index)
 {
-    int id_ship=modelShip->data(modelShip->index(index.row(),0),Qt::EditRole).toInt();
-    /*modelDataShip->refresh(id_ship);
-    ui->tableViewShipData->setColumnHidden(0,true);
-    ui->tableViewShipData->setColumnWidth(1,55);
-    ui->tableViewShipData->setColumnWidth(2,80);
-    ui->tableViewShipData->setColumnWidth(3,250);
-    ui->tableViewShipData->setColumnWidth(4,65);
-    ui->tableViewShipData->setColumnWidth(5,45);
-    ui->tableViewShipData->setColumnHidden(6,true);
-    ui->tableViewShipData->setColumnHidden(7,true);
-    if (modelDataShip->rowCount()){
+    if (index.row()<0){
+        modelDataShip->clear();
+        certificate->clear();
+        return;
+    }
+    int id_ship=modelShip->getModelData(index.row(),"id").toInt();
+    modelDataShip->setPath("api/generalship/data/"+QString::number(id_ship));
+    modelDataShip->select();
+}
+
+void FormShip::refreshDataShipFinished()
+{
+    if (ui->tableViewShipData->model()->rowCount()){
         ui->tableViewShipData->selectRow(0);
     } else {
-        modelDataShip->refresh(-1);
-        editor->document()->clear();
-        reader->clear();
-    }*/
+        certificate->clear();
+    }
 }
 
 void FormShip::refreshShipSert(QModelIndex index)
 {
-    /*int id_part=modelDataShip->data(modelDataShip->index(index.row(),7),Qt::EditRole).toInt();
-    int id_ship=modelDataShip->data(modelDataShip->index(index.row(),0),Qt::EditRole).toInt();
-    QString prefix=modelDataShip->data(modelDataShip->index(index.row(),1),Qt::EditRole).toString();
-    QString nomSert=ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(ui->tableViewShip->currentIndex().row(),1),Qt::EditRole).toString();
-    QString name = prefix+"_"+modelDataShip->data(modelDataShip->index(index.row(),2),Qt::EditRole).toString();
+    if (index.row()<0){
+        certificate->clear();
+        return;
+    }
+    int id_part=modelDataShip->getModelData(index.row(),"id_part").toInt();
+    int id_ship=modelDataShip->getModelData(index.row(),"id").toInt();
+    QString prefix=modelDataShip->getModelData(index.row(),"prefix").toString();
+    QString nomSert=modelShip->getModelData(ui->tableViewShip->currentIndex().row(),"num").toString();
+    QString name = prefix+"_"+modelDataShip->getModelData(index.row(),"parti").toString();
     name+="_"+nomSert;
     name=name.replace(QRegularExpression("[^\\w]"), "_");
-    sertificat->build(id_part,id_ship,name,prefix);
-    reader->setCurrentIdShip(id_ship,name,prefix);*/
+    certificate->build(id_part,id_ship,name,prefix);
+    //reader->setCurrentIdShip(id_ship,name,prefix);
 }
 
 void FormShip::printAll()
 {
-    QPrintDialog printDialog(editor->printer, this);
+    /*QPrintDialog printDialog(editor->printer, this);
     if (printDialog.exec()) {
         printAll(editor->printer);
-    }
+    }*/
+    QVector<CertJobTask> tasks=getTack();
 }
 
 void FormShip::printAll(QPagedPaintDevice *printer)
@@ -134,7 +180,6 @@ void FormShip::printAll(QPagedPaintDevice *printer)
         }
     }
     delete pprd;
-    reloadDataShip();
 }
 
 void FormShip::pdfAll()
@@ -155,11 +200,10 @@ void FormShip::pdfAll()
         if (!dir.exists()) dir.mkdir(dir.path());
         dir.setPath(dir.path()+"/"+nomSert);
         if (!dir.exists()) dir.mkdir(dir.path());
-        QFile file(dir.path()+"/"+sertificat->getName()+".pdf");
+        QFile file(dir.path()+"/"+certificate->getName()+".pdf");
         editor->exportPdf(file.fileName());
     }
     delete pprd;
-    reloadDataShip();
 }
 
 void FormShip::multiPagePdf()
@@ -186,31 +230,14 @@ void FormShip::multiPagePdf()
     }
 }
 
-void FormShip::refresh()
-{
-    /*if (sender()==ui->cmdUpd){
-        sertificat->clearCache();
-        Rels::instance()->relSertType->refreshModel();
-    }
-    modelShip->refresh(ui->dateEditBeg->date(),ui->dateEditEnd->date());
-    ui->tableViewShip->setColumnHidden(0,true);
-    ui->tableViewShip->setColumnWidth(1,55);
-    ui->tableViewShip->setColumnWidth(2,70);
-    ui->tableViewShip->setColumnWidth(3,200);
-    if (ui->tableViewShip->model()->rowCount()){
-        ui->tableViewShip->selectRow(ui->tableViewShip->model()->rowCount()-1);
-    } else {
-        modelDataShip->refresh(-1);
-        editor->document()->clear();
-        reader->clear();
-    }*/
-}
-
 void FormShip::partReq(QModelIndex index)
 {
-    /*int id_part=modelDataShip->data(modelDataShip->index(index.row(),7),Qt::EditRole).toInt();
-    QString prefix=modelDataShip->data(modelDataShip->index(index.row(),1),Qt::EditRole).toString();
-    Rels::instance()->partSelectReq(id_part,prefix);*/
+    if (index.row()<0){
+        return;
+    }
+    int id_part=modelDataShip->getModelData(index.row(),"id_part").toInt();
+    QString prefix=modelDataShip->getModelData(index.row(),"prefix").toString();
+    emit partReq(id_part,prefix);
 }
 
 void FormShip::signFinished()
@@ -220,20 +247,6 @@ void FormShip::signFinished()
     ui->tabWidget->setCurrentIndex(1);*/
 }
 
-void FormShip::reloadDataShip()
-{
-    int id_ship=modelDataShip->data(modelDataShip->index(ui->tableViewShipData->currentIndex().row(),0),Qt::EditRole).toInt();
-    ui->tableViewShipData->blockSignals(true);
-    modelDataShip->select();
-    ui->tableViewShipData->blockSignals(false);
-    for (int i=0; i<modelDataShip->rowCount(); i++){
-        int id=modelDataShip->data(modelDataShip->index(i,0),Qt::EditRole).toInt();
-        if (id==id_ship){
-            ui->tableViewShipData->setCurrentIndex(ui->tableViewShipData->model()->index(i,1));
-            break;
-        }
-    }
-}
 
 void FormShip::signAll()
 {

@@ -5,8 +5,9 @@
 #include <QFileDialog>
 #include <QProgressDialog>
 #include <QPrintDialog>
-#include "certeditor/editor.h"
+#include "certeditor/certeditor.h"
 #include "certeditor/certdocument.h"
+#include "certeditor/certprocessor.h"
 #include "rest/restrotablemodel.h"
 
 namespace Ui {
@@ -23,28 +24,34 @@ public:
 
 private:
     Ui::FormShip *ui;
-    Editor *editor;
+    CertEditor *editor;
+    CertProcessor *processor;
     //Reader *reader;
-    CertDocument *sertificat;
+    CertDocument *certificate;
     RestRoTableModel *modelShip;
     RestRoTableModel *modelDataShip;
+    QVector<CertJobTask> getTack();
     void loadSettings();
     void saveSettings();
 
 private slots:
+    void refresh();
+    void refreshFinished();
     void refreshDataShip(QModelIndex index);
+    void refreshDataShipFinished();
     void refreshShipSert(QModelIndex index);
     void printAll();
     void printAll(QPagedPaintDevice *printer);
     void pdfAll();
     void multiPagePdf();
-    void refresh();
     void partReq(QModelIndex index);
     void signFinished();
-    void reloadDataShip();
     void signAll();
     void signPdfAll();
     void signPrintAll();
+
+signals:
+    void partReq(int id_part, QString prefix);
 };
 
 #endif // FORMSHIP_H

@@ -1,5 +1,5 @@
-#include "editor.h"
-#include "ui_editor.h"
+#include "certeditor.h"
+#include "ui_certeditor.h"
 #include <QPrintDialog>
 #include <QPrintPreviewDialog>
 #include <QPrinter>
@@ -10,13 +10,11 @@
 #include <QDebug>
 #include <QFileDialog>
 
-Editor::Editor(QTextDocument *doc, QWidget *parent) :
+CertEditor::CertEditor(QTextDocument *doc, QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::Editor)
+    ui(new Ui::CertEditor)
 {
     ui->setupUi(this);
-
-    QString rsrcPath=":/images/icons";
 
     const QIcon printIcon = QIcon::fromTheme("document-print", QIcon(rsrcPath + "/fileprint.png"));
     ui->cmd_print->setIcon(printIcon);
@@ -55,7 +53,7 @@ Editor::Editor(QTextDocument *doc, QWidget *parent) :
         connect(ui->radioButtonRus,SIGNAL(clicked(bool)),this,SLOT(setLang()));
         connect(ui->radioButtonEn,SIGNAL(clicked(bool)),this,SLOT(setLang()));
         connect(ui->radioButtonMix,SIGNAL(clicked(bool)),this,SLOT(setLang()));
-        connect(s,SIGNAL(sigRefresh()),this,SLOT(chDoc()));
+        connect(s,SIGNAL(sigDocRefresh()),this,SLOT(chDoc()));
     }
 
     connect(ui->textEdit->document(), SIGNAL(undoAvailable(bool)), actionUndo, SLOT(setEnabled(bool)));
@@ -78,20 +76,19 @@ Editor::Editor(QTextDocument *doc, QWidget *parent) :
 
 }
 
-QTextDocument *Editor::document()
+QTextDocument *CertEditor::document()
 {
     return ui->textEdit->document();
 }
 
-Editor::~Editor()
+CertEditor::~CertEditor()
 {
     delete ui;
     delete printer;
 }
 
-void Editor::setupTextActions()
+void CertEditor::setupTextActions()
 {
-    QString rsrcPath=":/icons";
     const QIcon boldIcon = QIcon::fromTheme("format-text-bold", QIcon(rsrcPath + "/textbold.png"));
     actionTextBold=toolBar->addAction(boldIcon,QString::fromUtf8("Жирный"),this,SLOT(textBold()));
     actionTextBold->setShortcut(Qt::CTRL + Qt::Key_B);
@@ -220,7 +217,7 @@ void Editor::setupTextActions()
     a->setShortcut(Qt::CTRL + Qt::Key_D);
 }
 
-void Editor::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
+void CertEditor::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
 {
     QTextCursor cursor = ui->textEdit->textCursor();
     if (!cursor.hasSelection())
@@ -229,7 +226,7 @@ void Editor::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
     ui->textEdit->mergeCurrentCharFormat(format);
 }
 
-QString Editor::imBackPath()
+QString CertEditor::imBackPath()
 {
     QString p;
     if (ui->radioButtonRus->isChecked() && !ui->radioButtonEn->isChecked()){
@@ -242,13 +239,13 @@ QString Editor::imBackPath()
     return p;
 }
 
-void Editor::print(QPrinter *p)
+void CertEditor::print(QPrinter *p)
 {
     QPainter painter(p);
     drawDoc(&painter);
 }
 
-void Editor::drawDoc(QPainter *painter)
+void CertEditor::drawDoc(QPainter *painter)
 {
     QTextDocument *doc=ui->textEdit->document();
     QRect rect = painter->viewport();
@@ -261,11 +258,11 @@ void Editor::drawDoc(QPainter *painter)
     doc->drawContents(painter);
 }
 
-void Editor::exportHtml()
+void CertEditor::exportHtml()
 {
     CertDocument *doc = qobject_cast<CertDocument *>(ui->textEdit->document());
     QString exportname, fname;
-    fname= doc? (doc->getName()) : QString("sertificat");
+    fname= doc? (doc->getName()) : QString("certificate");
     if (doc){
         QSettings settings("szsm", QApplication::applicationName());
         QDir dir(settings.value("sertPath",QDir::homePath()).toString());
@@ -280,28 +277,28 @@ void Editor::exportHtml()
     }
 }
 
-void Editor::textBold()
+void CertEditor::textBold()
 {
     QTextCharFormat fmt;
     fmt.setFontWeight(actionTextBold->isChecked() ? QFont::Bold : QFont::Normal);
     mergeFormatOnWordOrSelection(fmt);
 }
 
-void Editor::textItalic()
+void CertEditor::textItalic()
 {
     QTextCharFormat fmt;
     fmt.setFontItalic(actionTextItalic->isChecked());
     mergeFormatOnWordOrSelection(fmt);
 }
 
-void Editor::textUnderline()
+void CertEditor::textUnderline()
 {
     QTextCharFormat fmt;
     fmt.setFontUnderline(actionTextUnderline->isChecked());
     mergeFormatOnWordOrSelection(fmt);
 }
 
-void Editor::textAlign(QAction *a)
+void CertEditor::textAlign(QAction *a)
 {
     if (a == actionAlignLeft)
         ui->textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
@@ -313,7 +310,7 @@ void Editor::textAlign(QAction *a)
         ui->textEdit->setAlignment(Qt::AlignJustify);
 }
 
-void Editor::textColor()
+void CertEditor::textColor()
 {
     QColor col = QColorDialog::getColor(ui->textEdit->textColor(), this);
     if (!col.isValid())
@@ -324,14 +321,14 @@ void Editor::textColor()
     colorChanged(col);
 }
 
-void Editor::colorChanged(const QColor &c)
+void CertEditor::colorChanged(const QColor &c)
 {
     QPixmap pix(16, 16);
     pix.fill(c);
     actionTextColor->setIcon(pix);
 }
 
-void Editor::fontChanged(const QFont &f)
+void CertEditor::fontChanged(const QFont &f)
 {
     comboFont->setCurrentIndex(comboFont->findText(QFontInfo(f).family()));
     comboSize->setCurrentIndex(comboSize->findText(QString::number(f.pointSize())));
@@ -340,7 +337,7 @@ void Editor::fontChanged(const QFont &f)
     actionTextUnderline->setChecked(f.underline());
 }
 
-void Editor::alignmentChanged(Qt::Alignment a)
+void CertEditor::alignmentChanged(Qt::Alignment a)
 {
     if (a & Qt::AlignLeft)
         actionAlignLeft->setChecked(true);
@@ -352,18 +349,18 @@ void Editor::alignmentChanged(Qt::Alignment a)
         actionAlignJustify->setChecked(true);
 }
 
-void Editor::currentCharFormatChanged(const QTextCharFormat &format)
+void CertEditor::currentCharFormatChanged(const QTextCharFormat &format)
 {
     fontChanged(format.font());
     colorChanged(format.foreground().color());
 }
 
-void Editor::cursorPositionChanged()
+void CertEditor::cursorPositionChanged()
 {
     alignmentChanged(ui->textEdit->alignment());
 }
 
-void Editor::textStyle(int styleIndex)
+void CertEditor::textStyle(int styleIndex)
 {
     QTextCursor cursor = ui->textEdit->textCursor();
 
@@ -424,14 +421,14 @@ void Editor::textStyle(int styleIndex)
         }
 }
 
-void Editor::textFamily(const QString &f)
+void CertEditor::textFamily(const QString &f)
 {
     QTextCharFormat fmt;
     fmt.setFontFamily(f);
     mergeFormatOnWordOrSelection(fmt);
 }
 
-void Editor::textSize(const QString &p)
+void CertEditor::textSize(const QString &p)
 {
     qreal pointSize = p.toFloat();
     if (p.toFloat() > 0) {
@@ -441,7 +438,7 @@ void Editor::textSize(const QString &p)
     }
 }
 
-void Editor::setObr()
+void CertEditor::setObr()
 {
     if (ui->comboBoxType->currentIndex()==1){
         ui->textEdit->viewport()->setStyleSheet(QString("background-image: url(%1);").arg(imBackPath()));
@@ -450,7 +447,7 @@ void Editor::setObr()
     }
 }
 
-void Editor::chDoc()
+void CertEditor::chDoc()
 {
     CertDocument *s=qobject_cast<CertDocument *>(this->document());
     if (s){
@@ -462,7 +459,7 @@ void Editor::chDoc()
         for (const sertData &d : s->getSData()){
             QCheckBox *box = new QCheckBox(d.ved_short+": "+d.nom_doc);
             connect(box,SIGNAL(clicked(bool)),this,SLOT(setEnDoc(bool)));
-            box->setChecked(d.en);
+            box->setChecked(s->getDocEn(d.id_doc));
             box->setProperty("id",d.id_doc);
             boxes.push_back(box);
             ui->verticalLayoutBox->addWidget(box);
@@ -474,26 +471,28 @@ void Editor::chDoc()
     }
 }
 
-void Editor::setEnDoc(bool en)
+void CertEditor::setEnDoc(bool en)
 {
     QCheckBox *box=qobject_cast<QCheckBox *>(sender());
     if (box){
         CertDocument *s=qobject_cast<CertDocument *>(this->document());
         if (s){
             s->setDocEn(box->property("id").toInt(),en);
+            s->rebuild();
         }
     }
 }
 
-void Editor::setDefaultDoc()
+void CertEditor::setDefaultDoc()
 {
     CertDocument *s=qobject_cast<CertDocument *>(this->document());
     if (s){
         s->setDefaultDoc();
+        s->rebuild();
     }
 }
 
-void Editor::loadHtml()
+void CertEditor::loadHtml()
 {
     QString fileName = QFileDialog::getOpenFileName(this,tr("Open html"),QDir::homePath(), tr("HTML Files (*.html)"));
     if (!fileName.isEmpty()){
@@ -509,7 +508,7 @@ void Editor::loadHtml()
     }
 }
 
-void Editor::setLang()
+void CertEditor::setLang()
 {
     QString lang="mix";
     if (ui->radioButtonRus->isChecked()){
@@ -520,16 +519,18 @@ void Editor::setLang()
     CertDocument *s=qobject_cast<CertDocument *>(this->document());
     if (s){
         s->setLang(lang);
+        s->rebuild();
     }
 }
 
-void Editor::setType()
+void CertEditor::setType()
 {
     int type=ui->comboBoxType->getCurrentData().val.toInt();
     int id_ship=-1;
     CertDocument *s=qobject_cast<CertDocument *>(this->document());
     if (s){
         s->setType(type);
+        s->rebuild();
         id_ship=s->getIdShip();
     }
     bool en=((type==6) && (id_ship>0));
@@ -537,12 +538,12 @@ void Editor::setType()
     emit signEnChanged(en);
 }
 
-void Editor::signDS()
+void CertEditor::signDS()
 {
     sign(QString());
 }
 
-void Editor::loadDS()
+void CertEditor::loadDS()
 {
     QSettings settings("szsm", QApplication::applicationName());
     QDir dir(settings.value("loadPath",QDir::homePath()).toString());
@@ -555,7 +556,7 @@ void Editor::loadDS()
     }
 }
 
-bool Editor::signDS(QString sn, QString fname)
+bool CertEditor::signDS(QString sn, QString fname)
 {
     QByteArray st;
     bool ok=false;
@@ -590,7 +591,7 @@ bool Editor::signDS(QString sn, QString fname)
     return ok;
 }
 
-void Editor::sign(QString fname)
+void CertEditor::sign(QString fname)
 {
     /*DialogSignature d;
     if (d.exec()==QDialog::Accepted){
@@ -615,7 +616,7 @@ void Editor::sign(QString fname)
     }*/
 }
 
-void Editor::filePrint()
+void CertEditor::filePrint()
 {
     QPrintDialog printDialog(printer, this);
     if (printDialog.exec()) {
@@ -623,14 +624,14 @@ void Editor::filePrint()
     }
 }
 
-void Editor::filePrintPreview()
+void CertEditor::filePrintPreview()
 {
     QPrintPreviewDialog preview(printer, this);
     connect(&preview,SIGNAL(paintRequested(QPrinter*)), this, SLOT(print(QPrinter*)));
     preview.exec();
 }
 
-void Editor::exportPdf()
+void CertEditor::exportPdf()
 {
     CertDocument *doc = qobject_cast<CertDocument *>(ui->textEdit->document());
     QString exportname, fname;
@@ -646,7 +647,7 @@ void Editor::exportPdf()
     }
 }
 
-void Editor::exportPdf(QString filename)
+void CertEditor::exportPdf(QString filename)
 {
     if (QFileInfo(filename).suffix().isEmpty()){
         filename.append(".pdf");

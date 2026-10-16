@@ -127,6 +127,9 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="frameShape">
+           <enum>QFrame::Shape::NoFrame</enum>
+          </property>
           <property name="currentIndex">
            <number>0</number>
           </property>
@@ -142,7 +145,7 @@
                  </font>
                 </property>
                 <property name="text">
-                 <string>Редактор:</string>
+                 <string>Редак.:</string>
                 </property>
                 <property name="wordWrap">
                  <bool>false</bool>
@@ -159,7 +162,7 @@
               <item>
                <widget class="QPushButton" name="cmdSaveAll">
                 <property name="text">
-                 <string>Сохранить все</string>
+                 <string>Сохр. все</string>
                 </property>
                </widget>
               </item>
@@ -169,7 +172,7 @@
                  <bool>false</bool>
                 </property>
                 <property name="text">
-                 <string>Подписать все</string>
+                 <string>Подп. все</string>
                 </property>
                </widget>
               </item>
@@ -223,7 +226,7 @@
               <item>
                <widget class="QPushButton" name="pushButtonSaveDsAll">
                 <property name="text">
-                 <string>Сохранить все</string>
+                 <string>Сохр. все</string>
                 </property>
                </widget>
               </item>

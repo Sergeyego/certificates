@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Editor</class>
- <widget class="QWidget" name="Editor">
+ <class>CertEditor</class>
+ <widget class="QWidget" name="CertEditor">
   <property name="windowModality">
    <enum>Qt::WindowModality::ApplicationModal</enum>
   </property>
@@ -47,7 +47,7 @@
      <item>
       <widget class="QScrollArea" name="scrollArea">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -60,7 +60,7 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>146</width>
+          <width>150</width>
           <height>760</height>
          </rect>
         </property>
@@ -125,7 +125,7 @@
         <bool>false</bool>
        </property>
        <property name="text">
-        <string>Подписать ЭЦП</string>
+        <string>Подписать</string>
        </property>
       </widget>
      </item>
@@ -172,7 +172,7 @@
      <item>
       <widget class="QPushButton" name="pushButtonLoad">
        <property name="text">
-        <string>Загрузить и подписать</string>
+        <string>Загр. и подписать</string>
        </property>
       </widget>
      </item>
@@ -203,7 +203,7 @@
   <customwidget>
    <class>TextEdit</class>
    <extends>QTextEdit</extends>
-   <header>certeditor/editor.h</header>
+   <header>certeditor/certeditor.h</header>
   </customwidget>
   <customwidget>
    <class>RestComboBox</class>

@@ -1,5 +1,5 @@
-#ifndef EDITOR_H
-#define EDITOR_H
+#ifndef CERTEDITOR_H
+#define CERTEDITOR_H
 
 #include <QWidget>
 #include <QTextDocument>
@@ -18,7 +18,7 @@
 #include "rest/relmodels.h"
 
 namespace Ui {
-class Editor;
+class CertEditor;
 }
 
 class TextEdit : public QTextEdit
@@ -48,20 +48,20 @@ private slots:
     void addTable();
 };
 
-class Editor : public QWidget
+class CertEditor : public QWidget
 {
     Q_OBJECT
     
 public:
-    explicit Editor(QTextDocument *doc, QWidget *parent = 0);
+    explicit CertEditor(QTextDocument *doc, QWidget *parent = 0);
     QTextDocument* document();
-    ~Editor();
+    ~CertEditor();
     QPrinter *printer;
     bool signDS(QString sn, QString fname = QString());
     void sign(QString fname);
     
 private:
-    Ui::Editor *ui;
+    Ui::CertEditor *ui;
     QToolBar *toolBar;
     QToolBar *toolBarFont;
     QAction *actionTextBold;
@@ -78,6 +78,7 @@ private:
     QFontComboBox *comboFont;
     QComboBox *comboSize;
     QVector <QCheckBox*> boxes;
+    const QString rsrcPath=":/images/icons";
 
     void setupTextActions();
     void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
@@ -121,4 +122,4 @@ signals:
     void signEnChanged(bool b);
 };
 
-#endif // EDITOR_H
+#endif // CERTEDITOR_H
