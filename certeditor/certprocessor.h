@@ -19,7 +19,7 @@ struct CertJobTask {
     QString lang;
     QString prefix;
     QMap<int, bool> mapSert;
-    int sertType; // Тип сертификата
+    int sertType;
 };
 
 class CertProcessor : public QObject
@@ -35,9 +35,10 @@ public:
 
     explicit CertProcessor(QObject *parent = nullptr);
     ~CertProcessor();
+    void setTextWidth(qreal width);
 
     // Запуск пакетной обработки
-    void startProcessing(const QVector<CertJobTask> &tasks, WorkMode mode, const QString &outputDirOrFile = "");
+    bool startProcessing(const QVector<CertJobTask> &tasks, WorkMode mode, const QString &outputDirOrFile = "");
 
 signals:
     void finished(); // Сигнал завершения всей пачки

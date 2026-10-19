@@ -21,11 +21,12 @@ FormShip::FormShip(QWidget *parent) :
     ui->dateEditBeg->setDate(QDate::currentDate().addDays(-QDate::currentDate().dayOfYear()+1));
     ui->dateEditEnd->setDate(ui->dateEditBeg->date().addYears(1));
 
-    processor = new CertProcessor(this);
-
     certificate = new CertDocument(this);
     editor = new CertEditor(certificate,this);
     ui->tab_1->layout()->addWidget(editor);
+
+    processor = new CertProcessor(this);
+    processor->setTextWidth(certificate->textWidth());
 
     //reader = new Reader(this);
     //ui->tab_2->layout()->addWidget(reader);
@@ -67,7 +68,7 @@ FormShip::~FormShip()
     delete ui;
 }
 
-QVector<CertJobTask> FormShip::getTack()
+QVector<CertJobTask> FormShip::getTasks()
 {
     QVector<CertJobTask> tasks;
     for (int i=0; i<modelDataShip->rowCount(); i++){
@@ -145,85 +146,50 @@ void FormShip::refreshShipSert(QModelIndex index)
     int id_part=modelDataShip->getModelData(index.row(),"id_part").toInt();
     int id_ship=modelDataShip->getModelData(index.row(),"id").toInt();
     QString prefix=modelDataShip->getModelData(index.row(),"prefix").toString();
-    QString nomSert=modelShip->getModelData(ui->tableViewShip->currentIndex().row(),"num").toString();
-    QString name = prefix+"_"+modelDataShip->getModelData(index.row(),"parti").toString();
-    name+="_"+nomSert;
-    name=name.replace(QRegularExpression("[^\\w]"), "_");
-    certificate->build(id_part,id_ship,name,prefix);
+    certificate->build(id_part,id_ship,prefix);
     //reader->setCurrentIdShip(id_ship,name,prefix);
 }
 
 void FormShip::printAll()
 {
-    /*QPrintDialog printDialog(editor->printer, this);
-    if (printDialog.exec()) {
-        printAll(editor->printer);
-    }*/
-    QVector<CertJobTask> tasks=getTack();
-}
-
-void FormShip::printAll(QPagedPaintDevice *printer)
-{
-    QProgressDialog* pprd = new QProgressDialog(tr("Идет формирование документа..."),"", 0, modelDataShip->rowCount(), this);
-    pprd->setCancelButton(0);
-    pprd->setMinimumDuration(0);
-    pprd->setWindowTitle(tr("Пожалуйста, подождите"));
-
-    QPainter painter(printer);
-    for (int i=0; i<modelDataShip->rowCount(); i++){
-        QCoreApplication::processEvents();
-        pprd->setValue(i);
-        refreshShipSert(modelDataShip->index(i,0));
-        editor->drawDoc(&painter);
-        if (i!=modelDataShip->rowCount()-1){
-            printer->newPage();
-        }
+    QVector<CertJobTask> tasks=getTasks();
+    bool ok = processor->startProcessing(tasks,CertProcessor::WorkMode::PrintAll);
+    if (ok){
+        createProgressDialog(tasks.size(),tr("Печать сертификатов..."));
     }
-    delete pprd;
 }
 
 void FormShip::pdfAll()
 {
-    QProgressDialog* pprd = new QProgressDialog(tr("Идет формирование документов..."),"", 0, modelDataShip->rowCount(), this);
-    pprd->setCancelButton(0);
-    pprd->setMinimumDuration(0);
-    pprd->setWindowTitle(tr("Пожалуйста, подождите"));
-    int yearSert=ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(ui->tableViewShip->currentIndex().row(),2),Qt::EditRole).toDate().year();
-    QString nomSert=ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(ui->tableViewShip->currentIndex().row(),1),Qt::EditRole).toString();
-    for (int i=0; i<modelDataShip->rowCount(); i++){
-        QCoreApplication::processEvents();
-        pprd->setValue(i);
-        refreshShipSert(modelDataShip->index(i,0));
-        QDir dir(QDir::homePath()+"/sertificat");
-        if (!dir.exists()) dir.mkdir(dir.path());
-        dir.setPath(dir.path()+"/"+QString::number(yearSert));
-        if (!dir.exists()) dir.mkdir(dir.path());
-        dir.setPath(dir.path()+"/"+nomSert);
-        if (!dir.exists()) dir.mkdir(dir.path());
-        QFile file(dir.path()+"/"+certificate->getName()+".pdf");
-        editor->exportPdf(file.fileName());
+    if (ui->tableViewShip->currentIndex().row() < 0) return;
+    QVector<CertJobTask> tasks=getTasks();
+    QDir dir(QDir::homePath()+"/sertificat");
+    if (!dir.exists()) dir.mkdir(dir.path());
+    dir.setPath(dir.path()+"/"+QString::number(modelShip->getModelData(ui->tableViewShip->currentIndex().row(),"dat").toDate().year()));
+    if (!dir.exists()) dir.mkdir(dir.path());
+    dir.setPath(dir.path()+"/"+modelShip->getModelData(ui->tableViewShip->currentIndex().row(),"num").toString());
+    if (!dir.exists()) dir.mkdir(dir.path());
+    bool ok = processor->startProcessing(tasks,CertProcessor::WorkMode::SaveSeparatePDF,dir.path());
+    if (ok){
+        createProgressDialog(tasks.size(),tr("Сохранение сертификатов..."));
     }
-    delete pprd;
 }
 
 void FormShip::multiPagePdf()
 {
-    if (!ui->tableViewShipData->model()->rowCount()){
+    if (!ui->tableViewShipData->model()->rowCount() || (ui->tableViewShip->currentIndex().row() < 0)){
         return;
     }
-    QString name=ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(ui->tableViewShip->currentIndex().row(),1),Qt::EditRole).toString();
+    QString name=modelShip->getModelData(ui->tableViewShip->currentIndex().row(),"num").toString();
     QSettings settings("szsm", QApplication::applicationName());
     QDir dir(settings.value("sertPath",QDir::homePath()).toString());
     QString fname = QFileDialog::getSaveFileName(this,tr("Сохранить PDF"),dir.path()+"/"+name+".pdf", "*.pdf");
     if (!fname.isEmpty()){
-        QPrinter pdfPrinter;
-        pdfPrinter.setOutputFileName(fname);
-        pdfPrinter.setOutputFormat(QPrinter::PdfFormat);
-        pdfPrinter.setOutputFileName(fname);
-        pdfPrinter.setColorMode(QPrinter::Color);
-        pdfPrinter.setPageMargins(QMarginsF(15, 15, 15, 15),QPageLayout::Millimeter);
-        pdfPrinter.setResolution(QPrinter::HighResolution);
-        printAll(&pdfPrinter);
+        QVector<CertJobTask> tasks=getTasks();
+        bool ok = processor->startProcessing(tasks,CertProcessor::WorkMode::SaveMultiPagePDF,fname);
+        if (ok) {
+            createProgressDialog(tasks.size(),tr("Формирование документа..."));
+        }
         QFile file(fname);
         QFileInfo info(file);
         settings.setValue("sertPath",info.path());
@@ -340,5 +306,15 @@ void FormShip::signPrintAll()
         }
         delete pprd;
     }*/
+}
+
+void FormShip::createProgressDialog(int maximum, const QString &message)
+{
+    QProgressDialog *progressDialog = new QProgressDialog(message,nullptr,0,maximum,this);
+    progressDialog->setModal(true);
+    progressDialog->setWindowTitle(tr("Пожалуйста, подождите"));
+    progressDialog->show();
+    connect(processor,SIGNAL(progress(int,int)),progressDialog,SLOT(setValue(int)));
+    connect(processor,SIGNAL(finished()),progressDialog,SLOT(deleteLater()));
 }
 

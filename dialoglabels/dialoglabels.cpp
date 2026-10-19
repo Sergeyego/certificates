@@ -65,13 +65,13 @@ void DialogLabels::onListResult()
     reply->deleteLater();
 
     if (err != QNetworkReply::NoError) {
-        QMessageBox::critical(this,tr("Ошибка"), errStr + "\n" + data,QMessageBox::Cancel);
+        RestError::critical(tr("Ошибка"), errStr + "\n" + data);
         return;
     }
 
     const QJsonDocument doc = QJsonDocument::fromJson(data);
     if (doc.isNull()) {
-        QMessageBox::critical(this,tr("Ошибка"), tr("Некорректный ответ сервера."),QMessageBox::Cancel);
+        RestError::critical(tr("Ошибка"), tr("Некорректный ответ сервера."));
         return;
     }
 
@@ -95,7 +95,7 @@ void DialogLabels::onLabelResult()
     reply->deleteLater();
 
     if (err != QNetworkReply::NoError) {
-        QMessageBox::critical(this,tr("Ошибка"), errStr + "\n" + data,QMessageBox::Cancel);
+        RestError::critical(tr("Ошибка"), errStr + "\n" + data);
         return;
     }
 
@@ -162,7 +162,7 @@ void DialogLabels::saveLabel()
         settings.setValue("last_label_save_path", fileInfo.absolutePath());
         //QMessageBox::information(this, tr("Успех"), tr("Этикетка успешно сохранена."));
     } else {
-        QMessageBox::critical(this, tr("Ошибка"), tr("Не удалось сохранить файл."));
+        RestError::critical(tr("Ошибка"), tr("Не удалось сохранить файл."));
     }
 }
 
@@ -183,7 +183,7 @@ void DialogLabels::printLabel()
 
     QPainter painter(&printer);
     if (!painter.isActive()) {
-        QMessageBox::critical(this, tr("Ошибка"), tr("Не удалось инициализировать печать."));
+        RestError::critical(tr("Ошибка"), tr("Не удалось инициализировать печать."));
         return;
     }
 

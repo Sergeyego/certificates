@@ -226,19 +226,6 @@ void CertEditor::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
     ui->textEdit->mergeCurrentCharFormat(format);
 }
 
-QString CertEditor::imBackPath()
-{
-    QString p;
-    if (ui->radioButtonRus->isChecked() && !ui->radioButtonEn->isChecked()){
-        p=":images/bgr.png";
-    } else if (!ui->radioButtonRus->isChecked() && ui->radioButtonEn->isChecked()){
-        p=":images/bge.png";
-    } else {
-        p=":images/bgm.png";
-    }
-    return p;
-}
-
 void CertEditor::print(QPrinter *p)
 {
     QPainter painter(p);
@@ -247,15 +234,12 @@ void CertEditor::print(QPrinter *p)
 
 void CertEditor::drawDoc(QPainter *painter)
 {
-    QTextDocument *doc=ui->textEdit->document();
-    QRect rect = painter->viewport();
-    QSize size (rect.size());
-    size.scale(doc->size().toSize(),Qt::KeepAspectRatioByExpanding);
-    painter->setWindow(0,0,size.width(),size.height());
-    if (ui->comboBoxType->currentIndex()==1){
-        painter->drawImage(painter->window(),QImage(imBackPath()));
+    CertDocument *s=qobject_cast<CertDocument *>(this->document());
+    if (s){
+        s->renderToOnePage(painter);
+    } else {
+        ui->textEdit->document()->drawContents(painter);
     }
-    doc->drawContents(painter);
 }
 
 void CertEditor::exportHtml()
@@ -263,6 +247,10 @@ void CertEditor::exportHtml()
     CertDocument *doc = qobject_cast<CertDocument *>(ui->textEdit->document());
     QString exportname, fname;
     fname= doc? (doc->getName()) : QString("certificate");
+    fname=fname.replace(QRegularExpression("[^\\w]", QRegularExpression::UseUnicodePropertiesOption), "_");
+    if (fname.isEmpty()){
+        fname=QString("certificate");
+    }
     if (doc){
         QSettings settings("szsm", QApplication::applicationName());
         QDir dir(settings.value("sertPath",QDir::homePath()).toString());
@@ -440,8 +428,9 @@ void CertEditor::textSize(const QString &p)
 
 void CertEditor::setObr()
 {
-    if (ui->comboBoxType->currentIndex()==1){
-        ui->textEdit->viewport()->setStyleSheet(QString("background-image: url(%1);").arg(imBackPath()));
+    CertDocument *s=qobject_cast<CertDocument *>(this->document());
+    if (s && ui->comboBoxType->getCurrentData().val.toInt()==1){
+        ui->textEdit->viewport()->setStyleSheet(QString("background-image: url(%1);").arg(s->imBackPath()));
     } else {
         ui->textEdit->viewport()->setStyleSheet(QString(""));
     }
@@ -635,7 +624,11 @@ void CertEditor::exportPdf()
 {
     CertDocument *doc = qobject_cast<CertDocument *>(ui->textEdit->document());
     QString exportname, fname;
-    fname= doc? (doc->getName()) : QString("sertificat");
+    fname= doc? (doc->getName()) : QString("certificate");
+    fname.replace(QRegularExpression("[^\\w]", QRegularExpression::UseUnicodePropertiesOption), "_");
+    if (fname.isEmpty()){
+        fname=QString("certificate");
+    }
     QSettings settings("szsm", QApplication::applicationName());
     QDir dir(settings.value("sertPath",QDir::homePath()).toString());
     exportname = QFileDialog::getSaveFileName(this,tr("Сохранить PDF"),dir.path()+"/"+fname+".pdf", "*.pdf");

@@ -9,11 +9,36 @@ CertDocument::CertDocument(QObject *parent) :
 int CertDocument::getType()                 { return sertType; }
 svData CertDocument::getSData()             { return sdata; }
 QMap<int, bool> CertDocument::getMapSert()  { return mapDocSert; }
-QString CertDocument::getName()             { return sname; }
+QString CertDocument::getName()             { return metaInformation(QTextDocument::DocumentTitle); }
 int CertDocument::getIdShip()               { return current_id_ship; }
 QString CertDocument::getLang()             { return lang; }
 QString CertDocument::getPrefix()           { return spref; }
 void CertDocument::clearCache()             { map.clear(); }
+
+void CertDocument::renderToOnePage(QPainter *painter)
+{
+    QRect rect = painter->viewport();
+    QSize size (rect.size());
+    size.scale(this->size().toSize(),Qt::KeepAspectRatioByExpanding);
+    painter->setWindow(0,0,size.width(),size.height());
+    if (sertType==1){
+        painter->drawImage(painter->window(),QImage(imBackPath()));
+    }
+    this->drawContents(painter);
+}
+
+QString CertDocument::imBackPath()
+{
+    QString p;
+    if (lang=="ru"){
+        p=":images/bgr.png";
+    } else if (lang=="en"){
+        p=":images/bge.png";
+    } else {
+        p=":images/bgm.png";
+    }
+    return p;
+}
 
 bool CertDocument::getDocEn(int id_doc)
 {
@@ -36,11 +61,10 @@ void CertDocument::abortReply(QPointer<QNetworkReply> &reply)
 // ============================================================
 // Публичный вход
 // ============================================================
-void CertDocument::build(int id_part, int id_ship, QString name, QString prefix)
+void CertDocument::build(int id_part, int id_ship, QString prefix)
 {
     current_id_part = id_part;
     current_id_ship = id_ship;
-    sname = name;
     spref = prefix;
     updSData();
 }
@@ -111,8 +135,7 @@ void CertDocument::updSDataFinished()
         this->clear();
         emit sigDocRefresh();
         emit buildFinished();
-        QMessageBox::critical(QApplication::activeWindow(), tr("Ошибка загрузки метаданных"),
-                              errStr + "\n" + resp, QMessageBox::Cancel);
+        RestError::critical(tr("Ошибка загрузки метаданных"), errStr + "\n" + resp);
     }
 }
 
@@ -220,8 +243,7 @@ void CertDocument::rebuildFinished()
         this->clear();
         emit sigDocRefresh();
         emit buildFinished();
-        QMessageBox::critical(QApplication::activeWindow(), tr("Ошибка загрузки документа"),
-                              errStr + "\n" + data, QMessageBox::Cancel);
+        RestError::critical(tr("Ошибка загрузки документа"), errStr + "\n" + data);
         processNextRequest();
         return;
     }

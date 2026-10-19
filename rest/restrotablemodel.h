@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include "rest/resttablemodel.h"
 #include "rest/resttypes.h"
+#include "rest/resterror.h"
 
 class RestRoTableModel : public QAbstractTableModel
 {

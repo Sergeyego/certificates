@@ -253,7 +253,7 @@ void RestRoTableModel::onResult()
     // 2. Обработка сетевых ошибок (404, 500, таймаут и т.д.)
     if (netError != QNetworkReply::NoError) {
         clear();
-        QMessageBox::critical(QApplication::activeWindow(), tr("Ошибка сети"), reply->errorString() + "\n" + data, QMessageBox::Cancel);
+        RestError::instance()->push(tr("Ошибка сети"), reply->errorString() + "\n" + data);
         processNextRequest(); // Переходим к следующему ПОСЛЕ закрытия диалога
         return;
     }
@@ -267,7 +267,7 @@ void RestRoTableModel::onResult()
         clear();
         QString errorString = tr("Ошибка JSON: ") + jsonError.errorString() +
                               tr("\nПозиция: ") + QString::number(jsonError.offset);
-        QMessageBox::critical(QApplication::activeWindow(), tr("Ошибка данных"), errorString, QMessageBox::Cancel);
+        RestError::instance()->push(tr("Ошибка данных"), errorString);
         processNextRequest();
         return;
     }

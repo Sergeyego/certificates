@@ -2,6 +2,7 @@
 #include <QRegularExpression>
 #include <QApplication>
 #include <QMessageBox>
+#include "rest/resterror.h"
 
 PasportManager::PasportManager(QObject *parent)
     : QObject{parent}
@@ -26,9 +27,7 @@ void PasportManager::onResult()
     if (!reply) return;
 
     if (reply->error()) {
-        QMessageBox::critical(QApplication::activeWindow(), tr("Ошибка"),
-                              reply->errorString() + "\n" + reply->readAll(),
-                              QMessageBox::Cancel);
+        RestError::critical(tr("Ошибка"),reply->errorString() + "\n" + reply->readAll());
         reply->deleteLater();
         return;
     }
@@ -50,24 +49,19 @@ void PasportManager::onResult()
         dir.cd(year);
     }
 
-    filename.replace(QRegularExpression("[^\\w]",
-                                        QRegularExpression::UseUnicodePropertiesOption), "_");
+    filename.replace(QRegularExpression("[^\\w]", QRegularExpression::UseUnicodePropertiesOption), "_");
     const QString totalName = dir.path() + "/" + filename + ".pdf";
 
     QFile file(totalName);
     if (!file.open(QIODevice::WriteOnly)) {
-        QMessageBox::critical(QApplication::activeWindow(), tr("Ошибка"),
-                              tr("Не удалось сохранить файл: ") + totalName,
-                              QMessageBox::Cancel);
+        RestError::critical(tr("Ошибка"), tr("Не удалось сохранить файл: ") + totalName);
         reply->deleteLater();
         return;
     }
 
     const QByteArray data = reply->readAll();
     if (file.write(data) != data.size()) {
-        QMessageBox::critical(QApplication::activeWindow(), tr("Ошибка"),
-                              tr("Файл записан не полностью: ") + totalName,
-                              QMessageBox::Cancel);
+        RestError::critical(tr("Ошибка"), tr("Файл записан не полностью: ") + totalName);
         file.close();
         reply->deleteLater();
         return;

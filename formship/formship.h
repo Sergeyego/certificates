@@ -30,7 +30,7 @@ private:
     CertDocument *certificate;
     RestRoTableModel *modelShip;
     RestRoTableModel *modelDataShip;
-    QVector<CertJobTask> getTack();
+    QVector<CertJobTask> getTasks();
     void loadSettings();
     void saveSettings();
 
@@ -41,7 +41,6 @@ private slots:
     void refreshDataShipFinished();
     void refreshShipSert(QModelIndex index);
     void printAll();
-    void printAll(QPagedPaintDevice *printer);
     void pdfAll();
     void multiPagePdf();
     void partReq(QModelIndex index);
@@ -49,6 +48,7 @@ private slots:
     void signAll();
     void signPdfAll();
     void signPrintAll();
+    void createProgressDialog(int maximum, const QString &message);
 
 signals:
     void partReq(int id_part, QString prefix);

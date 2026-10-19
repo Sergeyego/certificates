@@ -9,6 +9,7 @@ CertProcessor::CertProcessor(QObject *parent)
     m_certDoc = new CertDocument(this);
     // Включаем пакетный режим работы для документа, чтобы он не сбрасывал задачи на асинхронных шагах
     m_certDoc->setBatchMode(true);
+
     connect(m_certDoc, &CertDocument::buildFinished, this, &CertProcessor::onDocRefreshed);
 }
 
@@ -17,17 +18,21 @@ CertProcessor::~CertProcessor()
     finalizeProcessing();
 }
 
-void CertProcessor::startProcessing(const QVector<CertJobTask> &tasks, WorkMode mode, const QString &outputDirOrFile)
+void CertProcessor::setTextWidth(qreal width)
+{
+    m_certDoc->setTextWidth(width);
+}
+
+bool CertProcessor::startProcessing(const QVector<CertJobTask> &tasks, WorkMode mode, const QString &outputDirOrFile)
 {
     // Защита от повторного запуска, пока конвейер занят
     if (!m_taskQueue.isEmpty() || m_painter || m_printer) {
         QMessageBox::warning(QApplication::activeWindow(), tr("Уже выполняется"), tr("Дождитесь завершения текущей операции."));
-        return;
+        return false;
     }
 
     if (tasks.isEmpty()) {
-        emit finished();
-        return;
+        return false;
     }
 
     m_taskQueue.clear();
@@ -44,15 +49,15 @@ void CertProcessor::startProcessing(const QVector<CertJobTask> &tasks, WorkMode 
     m_printer = new QPrinter(QPrinter::HighResolution);
     m_printer->setPageSize(QPageSize(QPageSize::A4));
     m_printer->setPageOrientation(QPageLayout::Portrait);
-    m_printer->setPageMargins(QMarginsF(0, 0, 0, 0));
+    m_printer->setPageMargins(QMarginsF(15, 15, 15, 15),QPageLayout::Millimeter);
+    m_printer->setColorMode(QPrinter::Color);
 
     if (m_mode == SaveMultiPagePDF) {
         if (m_basePath.isEmpty()) {
             m_basePath = QFileDialog::getSaveFileName(QApplication::activeWindow(), tr("Сохранить PDF"), "", "PDF Files (*.pdf)");
             if (m_basePath.isEmpty()) {
                 finalizeProcessing();
-                emit finished(); // ИСПРАВЛЕНО: Обязательно уведомляем UI об остановке
-                return;
+                return false;
             }
         }
         m_printer->setOutputFormat(QPrinter::PdfFormat);
@@ -62,35 +67,32 @@ void CertProcessor::startProcessing(const QVector<CertJobTask> &tasks, WorkMode 
         if (!m_painter->begin(m_printer)) {
             qWarning() << "Failed to begin painting on multi-page PDF printer";
             finalizeProcessing();
-            emit finished();
-            return;
+            return false;
         }
     }
     else if (m_mode == PrintAll) {
         QPrintDialog dialog(m_printer, QApplication::activeWindow());
         if (dialog.exec() != QDialog::Accepted) {
             finalizeProcessing();
-            emit finished(); // ИСПРАВЛЕНО: Спиннер в UI больше не зависнет при нажатии "Отмена" в диалоге печати
-            return;
+            return false;
         }
         m_painter = new QPainter();
         if (!m_painter->begin(m_printer)) {
             qWarning() << "Failed to begin painting on system printer";
             finalizeProcessing();
-            emit finished();
-            return;
+            return false;
         }
     }
 
     // Запуск конвейера задач
     processNext();
+    return true;
 }
 
 void CertProcessor::processNext()
 {
     if (m_taskQueue.isEmpty()) {
         finalizeProcessing();
-        emit finished(); // Успешное окончание всей пачки задач
         return;
     }
 
@@ -112,7 +114,7 @@ void CertProcessor::processNext()
     m_certDoc->setType(task.sertType);
 
     // Асинхронный запуск сборки. Ждем сигнал buildFinished -> слот onDocRefreshed()
-    m_certDoc->build(task.id_part, task.id_ship, "", task.prefix);
+    m_certDoc->build(task.id_part, task.id_ship, task.prefix);
 }
 
 void CertProcessor::onDocRefreshed()
@@ -132,26 +134,20 @@ void CertProcessor::renderCurrentDocument()
         QPrinter separatePrinter(QPrinter::HighResolution);
         separatePrinter.setPageSize(QPageSize(QPageSize::A4));
         separatePrinter.setPageOrientation(QPageLayout::Portrait);
-        separatePrinter.setPageMargins(QMarginsF(0, 0, 0, 0));
+        separatePrinter.setPageMargins(QMarginsF(15, 15, 15, 15),QPageLayout::Millimeter);
+        separatePrinter.setColorMode(QPrinter::Color);
         separatePrinter.setOutputFormat(QPrinter::PdfFormat);
 
-        QString fileName = QString("cert_part%1_type%2.pdf")
-                               .arg(m_certDoc->getIdShip() >= 0 ? m_certDoc->getIdShip() : m_currentProgress)
-                               .arg(m_certDoc->getType());
+        QString fileName = m_certDoc->getName().isEmpty()? QString::number(m_currentProgress) : m_certDoc->getName();
+        fileName=fileName.replace(QRegularExpression("[^\\w]", QRegularExpression::UseUnicodePropertiesOption), "_");
+        fileName+=".pdf";
 
         QString fullPath = m_basePath.isEmpty() ? fileName : QDir(m_basePath).filePath(fileName);
         separatePrinter.setOutputFileName(fullPath);
 
         QPainter painter(&separatePrinter);
         if (painter.isActive()) {
-            m_certDoc->setPageSize(separatePrinter.pageRect(QPrinter::DevicePixel).size());
-
-            double scaleX = double(separatePrinter.pageRect(QPrinter::DevicePixel).width()) / m_certDoc->idealWidth();
-            double scaleY = double(separatePrinter.pageRect(QPrinter::DevicePixel).height()) / m_certDoc->size().height();
-            double scale = qMin(scaleX, scaleY);
-
-            painter.scale(scale, scale);
-            m_certDoc->drawContents(&painter);
+            m_certDoc->renderToOnePage(&painter);
             painter.end();
         }
     }
@@ -163,26 +159,18 @@ void CertProcessor::renderCurrentDocument()
             m_printer->newPage();
         }
         m_isFirstPage = false;
-
-        m_certDoc->setPageSize(m_printer->pageRect(QPrinter::DevicePixel).size());
-
-        double scaleX = double(m_printer->pageRect(QPrinter::DevicePixel).width()) / m_certDoc->idealWidth();
-        double scaleY = double(m_printer->pageRect(QPrinter::DevicePixel).height()) / m_certDoc->size().height();
-        double scale = qMin(scaleX, scaleY);
-
         m_painter->save();
-        m_painter->scale(scale, scale);
-        m_certDoc->drawContents(m_painter);
+        m_certDoc->renderToOnePage(m_painter);
         m_painter->restore();
     }
 }
 
 void CertProcessor::finalizeProcessing()
 {
+    const bool wasRunning = (m_painter || m_printer || !m_taskQueue.isEmpty());
+    m_taskQueue.clear();
     if (m_painter) {
-        if (m_painter->isActive()) {
-            m_painter->end();
-        }
+        if (m_painter->isActive()) m_painter->end();
         delete m_painter;
         m_painter = nullptr;
     }
@@ -190,5 +178,6 @@ void CertProcessor::finalizeProcessing()
         delete m_printer;
         m_printer = nullptr;
     }
+    if (wasRunning) emit finished();
 }
 

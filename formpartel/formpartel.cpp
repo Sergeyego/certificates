@@ -395,7 +395,7 @@ void FormPartEl::showPartCertificate()
         return;
     }
     int id_part = modelPart->getModelData(currentIndex,"id").toInt();
-    certDocument->build(id_part,-1,"","elrtr");
+    certDocument->build(id_part,-1,"elrtr");
     certEditor->show();
 }
 
@@ -408,7 +408,7 @@ void FormPartEl::showShipCertificate(QModelIndex index)
     int id_part = modelPart->getModelData(currentIndex,"id").toInt();
     int id_ship=modelShip->getModelData(index.row(),"id").toInt();
     if (id_ship>0){
-        certDocument->build(id_part,id_ship,"","elrtr");
+        certDocument->build(id_part,id_ship,"elrtr");
         certEditor->show();
     }
 }
@@ -460,7 +460,7 @@ void ModelPart::refreshStateFinished()
         QByteArray data=reply->readAll();
         bool ok=(reply->error()==QNetworkReply::NoError);
         if (!ok){
-            QMessageBox::critical(QApplication::activeWindow(),tr("Ошибка"),reply->errorString()+"\n"+data,QMessageBox::Cancel);
+            RestError::critical(tr("Ошибка"),reply->errorString()+"\n"+data);
         } else {
             QJsonDocument doc = QJsonDocument::fromJson(data);
             QColor color = QColor(doc.object().value("color").toString());

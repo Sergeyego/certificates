@@ -15,6 +15,7 @@
 #include <QCheckBox>
 #include <QPdfWriter>
 #include <QProgressDialog>
+#include <QRegularExpression>
 #include "rest/relmodels.h"
 
 namespace Ui {
@@ -82,7 +83,6 @@ private:
 
     void setupTextActions();
     void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
-    QString imBackPath();
 
 public slots:
     void filePrint();

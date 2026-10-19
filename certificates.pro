@@ -22,6 +22,7 @@ SOURCES += \
     rest/restcombobox.cpp \
     rest/restconnection.cpp \
     rest/restdateedit.cpp \
+    rest/resterror.cpp \
     rest/restfilter.cpp \
     rest/restitemdelegate.cpp \
     rest/restlogin.cpp \
@@ -49,6 +50,7 @@ HEADERS += \
     rest/restcombobox.h \
     rest/restconnection.h \
     rest/restdateedit.h \
+    rest/resterror.h \
     rest/restfilter.h \
     rest/restitemdelegate.h \
     rest/restlogin.h \

@@ -37,8 +37,10 @@ public:
     svData getSData();
     QMap<int, bool> getMapSert();
     bool getDocEn(int id_doc);
-    void build(int id_part, int id_ship, QString name, QString prefix);
+    void build(int id_part, int id_ship, QString prefix);
     QString getName();
+    void renderToOnePage(QPainter *painter);
+    QString imBackPath();
 
 public slots:
     void rebuild();
@@ -72,7 +74,6 @@ private:
     svData sdata;
     QMap<int, bool> mapDocSert;
     QMap<int, bool> mapDocOrig;
-    QString sname;
     QString spref;
 
     QUrl nextUrl;
