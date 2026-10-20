@@ -5,6 +5,7 @@
 #include "tabmanager.h"
 #include "rest/restconnection.h"
 #include "formpartel/formpartel.h"
+#include "formpartwire/formpartwire.h"
 #include "formship/formship.h"
 
 QT_BEGIN_NAMESPACE
@@ -31,6 +32,7 @@ private:
 
 private slots:
     void newFormPartEl();
+    void newFormPartWire();
     void newFormShip();
 };
 #endif // MAINWINDOW_H

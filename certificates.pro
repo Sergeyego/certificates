@@ -14,6 +14,7 @@ SOURCES += \
     dialogcopyvalel/dialogcopyvalel.cpp \
     dialoglabels/dialoglabels.cpp \
     formpartel/formpartel.cpp \
+    formpartwire/formpartwire.cpp \
     formship/formship.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -43,6 +44,7 @@ HEADERS += \
     dialogcopyvalel/dialogcopyvalel.h \
     dialoglabels/dialoglabels.h \
     formpartel/formpartel.h \
+    formpartwire/formpartwire.h \
     formship/formship.h \
     mainwindow.h \
     pasportmanager.h \
@@ -70,6 +72,7 @@ FORMS += \
     dialogcopyvalel/dialogcopyvalel.ui \
     dialoglabels/dialoglabels.ui \
     formpartel/formpartel.ui \
+    formpartwire/formpartwire.ui \
     formship/formship.ui \
     mainwindow.ui \
     rest/restlogin.ui \
