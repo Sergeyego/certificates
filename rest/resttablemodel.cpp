@@ -595,8 +595,8 @@ void RestTableModel::loadInfo()
 
 void RestTableModel::setModelData(const QJsonArray &data)
 {
-    editor->revert();
     beginResetModel();
+    editor->submit();
     modelData.clear();
     for (const QJsonValue &value : data) {
         modelData.push_back(loadRow(value));

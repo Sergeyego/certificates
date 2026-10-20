@@ -99,6 +99,7 @@ void FormShip::saveSettings()
 void FormShip::refresh()
 {
     if (sender()==ui->cmdUpd){
+        RelModels::instance()->getModel("cert_type")->refresh();
         certificate->clearCache();
     }
     modelShip->setPath("api/generalship/list/"+ui->dateEditBeg->date().toString("yyyy-MM-dd")+"/"+ui->dateEditEnd->date().toString("yyyy-MM-dd"));

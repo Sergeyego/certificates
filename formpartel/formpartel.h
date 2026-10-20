@@ -53,6 +53,7 @@ private:
     RestTableModel *modelMechx;
     CertEditor *certEditor;
     CertDocument *certDocument;
+    int saved_id_part;
 
 private slots:
     void setBlock(bool b);

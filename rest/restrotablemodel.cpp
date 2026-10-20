@@ -175,6 +175,27 @@ QVariant RestRoTableModel::getModelData(int row, QString col) const
     return this->data(this->index(row,_columns.indexOf(col)),Qt::EditRole);
 }
 
+int RestRoTableModel::findRowByKey(QVariant key, QString col) const
+{
+    const int colIndex = _columns.indexOf(col);
+    if (colIndex < 0 || modelData.isEmpty()) {
+        return -1;
+    }
+
+    // Ищем строку, где значение в указанной колонке совпадает с key
+    for (int row = 0; row < modelData.size(); ++row) {
+        const QVariant &cellValue = modelData.at(row).at(colIndex).edit;
+
+        // Сравнение через toString() безопаснее, чем прямая проверка QVariant ==
+        // (int(1) == double(1.0) даст false в Qt, хотя по смыслу ключи равны)
+        if (cellValue.toString() == key.toString()) {
+            return row;
+        }
+    }
+
+    return -1;
+}
+
 void RestRoTableModel::select()
 {
     if (_path.isEmpty()){
@@ -193,6 +214,7 @@ void RestRoTableModel::select()
 void RestRoTableModel::selectSync()
 {
     QByteArray data;
+    emit sigStartRefresh();
     bool ok=RestConnection::instance()->sendSyncGet(_path,data);
     if (ok){
         QJsonDocument doc = QJsonDocument::fromJson(data);

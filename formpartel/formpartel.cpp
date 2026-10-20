@@ -7,6 +7,8 @@ FormPartEl::FormPartEl(QWidget *parent)
 {
     ui->setupUi(this);
 
+    saved_id_part=-1;
+
     QDoubleValidator *validator = new QDoubleValidator(0,10,1,this);
     validator->setLocale(QLocale::English);
     ui->lineEditDiam->setValidator(validator);
@@ -14,7 +16,8 @@ FormPartEl::FormPartEl(QWidget *parent)
     loadSettings();
 
     certDocument = new CertDocument(this);
-    certEditor = new CertEditor(certDocument);
+    certEditor = new CertEditor(certDocument,this);
+    certEditor->setWindowFlags(Qt::Window);
 
     ui->dateEditBeg->setDate(QDate(QDate::currentDate().year(),1,1));
     ui->dateEditEnd->setDate(QDate(QDate::currentDate().year(),12,31));
@@ -83,7 +86,6 @@ FormPartEl::FormPartEl(QWidget *parent)
 FormPartEl::~FormPartEl()
 {
     saveSettings();
-    delete certEditor;
     delete ui;
 }
 
@@ -250,8 +252,17 @@ void FormPartEl::updFinished()
     //qDebug()<<"upd finished";
     bool ok = ui->tableViewPart->model()->rowCount();
     if (ok){
-        ui->tableViewPart->selectRow(ui->tableViewPart->model()->rowCount()-1);
-        ui->tableViewPart->scrollToBottom();
+        if (saved_id_part>=0){
+            int row=modelPart->findRowByKey(saved_id_part,"id");
+            if (row<0) {
+                row=ui->tableViewPart->model()->rowCount()-1;
+            }
+            ui->tableViewPart->selectRow(row);
+            ui->tableViewPart->scrollTo(ui->tableViewPart->model()->index(row,0));
+        } else {
+            ui->tableViewPart->selectRow(ui->tableViewPart->model()->rowCount()-1);
+            ui->tableViewPart->scrollToBottom();
+        }
     } else {
         modelTu->clear();
         modelNote->clear();
@@ -284,6 +295,7 @@ void FormPartEl::updNoteFinished()
 void FormPartEl::updData(QModelIndex index)
 {
     int id_part = (index.row()>=0) ? modelPart->getModelData(index.row(),"id").toInt() : -1;
+    saved_id_part=id_part;
 
     modelTu->setPath("api/elrtr/parti/tu/"+QString::number(id_part));
     modelTu->select();
@@ -396,7 +408,10 @@ void FormPartEl::showPartCertificate()
     }
     int id_part = modelPart->getModelData(currentIndex,"id").toInt();
     certDocument->build(id_part,-1,"elrtr");
+    certEditor->showNormal();
     certEditor->show();
+    certEditor->raise();
+    certEditor->activateWindow();
 }
 
 void FormPartEl::showShipCertificate(QModelIndex index)
@@ -409,7 +424,10 @@ void FormPartEl::showShipCertificate(QModelIndex index)
     int id_ship=modelShip->getModelData(index.row(),"id").toInt();
     if (id_ship>0){
         certDocument->build(id_part,id_ship,"elrtr");
+        certEditor->showNormal();
         certEditor->show();
+        certEditor->raise();
+        certEditor->activateWindow();
     }
 }
 
@@ -449,34 +467,36 @@ void ModelPart::refreshState(int index)
     QUrl url = QUrl(RestConnection::instance()->getUrl()+"/api/elrtr/parti/color/"+QString::number(id_part));
 
     QNetworkReply *reply = RestConnection::instance()->sendGet(url);
-    reply->setProperty("index",index);
     connect(reply,SIGNAL(finished()),this,SLOT(refreshStateFinished()));
 }
 
 void ModelPart::refreshStateFinished()
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
-    if (reply){
-        QByteArray data=reply->readAll();
-        bool ok=(reply->error()==QNetworkReply::NoError);
-        if (!ok){
-            RestError::critical(tr("Ошибка"),reply->errorString()+"\n"+data);
-        } else {
-            QJsonDocument doc = QJsonDocument::fromJson(data);
-            QColor color = QColor(doc.object().value("color").toString());
-            int id_part = doc.object().value("id").toInt();
+    if (!reply) return;
 
-            int index = reply->property("index").toInt();
+    const auto err = reply->error();
+    const QString errStr = reply->errorString();
+    reply->deleteLater();
 
-            int current_id_part = this->getModelData(index,"id").toInt();
+    if (err == QNetworkReply::OperationCanceledError) return;
 
-            if (id_part==current_id_part) {
-                for (int j=0; j<this->columnCount(); j++){
-                    modelData[index][j].background = color;
-                }
-                emit dataChanged(this->index(index,0),this->index(index,columnCount()-1));
-            }
+    const QByteArray data = reply->readAll(); // readAll только после проверки отмены
+    if (err != QNetworkReply::NoError) {
+        RestError::critical(tr("Ошибка"), errStr + "\n" + data);
+        return;
+    }
+
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+    QColor color = QColor(doc.object().value("color").toString());
+    int id_part = doc.object().value("id").toInt();
+
+    // Ищем актуальную строку по ID, игнорируя устаревший индекс
+    int row = findRowByKey(id_part, "id");
+    if (row >= 0) {
+        for (int j = 0; j < this->columnCount(); ++j) {
+            modelData[row][j].background = color;
         }
-        reply->deleteLater();
+        emit dataChanged(this->index(row, 0), this->index(row, columnCount() - 1));
     }
 }
