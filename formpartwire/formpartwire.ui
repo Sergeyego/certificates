@@ -510,13 +510,6 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_9">
          <item>
-          <widget class="QPushButton" name="pushButtonCode">
-           <property name="text">
-            <string>Проверить код</string>
-           </property>
-          </widget>
-         </item>
-         <item>
           <spacer name="horizontalSpacer_4">
            <property name="orientation">
             <enum>Qt::Orientation::Horizontal</enum>

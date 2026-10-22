@@ -2,7 +2,6 @@
 #define FORMPARTWIRE_H
 
 #include <QWidget>
-#include <QDataWidgetMapper>
 #include "rest/restrotablemodel.h"
 #include "rest/resttablemodel.h"
 #include "certeditor/certeditor.h"
@@ -31,6 +30,16 @@ public:
     ModelWirePartiMech(QObject *parent=0);
     void refresh(int id_part);
     bool setData(const QModelIndex &index, const QVariant &value, int role);
+
+public slots:
+    void refreshCats();
+
+private:
+    RestRoTableModel *modelCats;
+    QMap <int, int> mapCat;
+
+private slots:
+    void refreshCatsFinished();
 };
 
 namespace Ui {
@@ -49,10 +58,9 @@ private:
     Ui::FormPartWire *ui;
     CertDocument *certDocument;
     CertEditor *certEditor;
-    //Reader *readerPart;
-
+    int saved_id_part;
     ModelPartWire *modelPartWire;
-    QDataWidgetMapper *mapper;
+    RestRoTableModel *modelNote;
     RestRoTableModel *modelTuSrc;
     RestTableModel *modelTu;
     RestRoTableModel *modelShip;
@@ -66,14 +74,15 @@ private:
 
 private slots:
     void upd();
+    void updFinished();
+    void updNoteFinished();
     void currentIndexChanged(QModelIndex index);
     void copyTu();
-    void showShipSert(QModelIndex index);
-    void showPartSert();
+    void showShipCertificate(QModelIndex index);
+    void showPartCertificate();
     void savePrim();
     void enPrimSave();
     void copyChem();
-    void showCheckForm();
     void findPart(int id_part, QString prefix);
 };
 

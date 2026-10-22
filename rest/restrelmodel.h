@@ -28,6 +28,7 @@ public:
     bool isEditable() const;
     void setEditable(bool e);
     colVal getModelData(int index) const;
+    int findRowByKey(QVariant key) const;
 
 public slots:
     void refresh();

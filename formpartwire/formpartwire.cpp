@@ -8,6 +8,8 @@ FormPartWire::FormPartWire(QWidget *parent)
     ui->setupUi(this);
     loadSettings();
 
+    saved_id_part=-1;
+
     certDocument = new CertDocument(this);
     certEditor = new CertEditor(certDocument,this);
     certEditor->setWindowFlags(Qt::Window);
@@ -15,88 +17,49 @@ FormPartWire::FormPartWire(QWidget *parent)
     ui->dateEditBeg->setDate(QDate::currentDate().addDays(-QDate::currentDate().dayOfYear()+1));
     ui->dateEditEnd->setDate(ui->dateEditBeg->date().addYears(1));
 
-    /*ui->comboBoxMarka->setModel(Rels::instance()->relProvol->model());
+    ui->comboBoxMarka->setModel(RelModels::instance()->getModel("provol"));
 
-    modelTuSrc = new ModelRo(this);
+    modelTuSrc = new RestRoTableModel(this);
     ui->tableViewSrcTu->setModel(modelTuSrc);
 
-    modelTu = new DbTableModel("wire_parti_gost",this);
-    modelTu->addColumn("id_parti","id_parti");
-    modelTu->addColumn("id_gost",QString::fromUtf8("Наименование"),Rels::instance()->relGost);
-    modelTu->setSort("gost_new.nam");
-
+    modelTu = new RestTableModel("wire_parti_gost",this);
     ui->tableViewTu->setModel(modelTu);
-    ui->tableViewTu->setColumnHidden(0,true);
-    ui->tableViewTu->setColumnWidth(1,200);
 
-    modelShip = new ModelRo(this);
+    modelShip = new RestRoTableModel(this);
     ui->tableViewShip->setModel(modelShip);
 
-    modelSrcChem = new ModelChemSrcWire(this);
+    modelNote = new RestRoTableModel(this);
+
+    modelSrcChem = new RestTableModel("prov_chem",this);
     ui->tableViewSrcChem->setModel(modelSrcChem);
-    ui->tableViewSrcChem->setColumnHidden(0,true);
-    ui->tableViewSrcChem->setColumnWidth(1,100);
-    ui->tableViewSrcChem->setColumnWidth(2,90);
 
-    modelChem = new ModelChemSertWire(this);
+    modelChem = new RestTableModel("wire_parti_chem",this);
     ui->tableViewChem->setModel(modelChem);
-    ui->tableViewChem->setColumnHidden(0,true);
-    ui->tableViewChem->setColumnHidden(1,true);
-    ui->tableViewChem->setColumnWidth(2,100);
-    ui->tableViewChem->setColumnWidth(3,90);
 
-    modelSrcMech = new DbTableModel("wire_mech",this);
-    modelSrcMech->addColumn("id","id");
-    modelSrcMech->addColumn("id_part","id_part");
-    modelSrcMech->addColumn("id_mech",tr("Параметр"),Rels::instance()->relMech);
-    modelSrcMech->addColumn("kvo",tr("Значен."));
-    modelSrcMech->setDecimals(3,3);
-    modelSrcMech->setDefaultValue(2,1);
-    modelSrcMech->setSort("wire_mech.id_mech, wire_mech.kvo");
+    modelSrcMech = new RestTableModel("wire_parti_mech",this);
     ui->tableViewSrcMech->setModel(modelSrcMech);
-    ui->tableViewSrcMech->setColumnHidden(0,true);
-    ui->tableViewSrcMech->setColumnHidden(1,true);
-    ui->tableViewSrcMech->setColumnWidth(2,250);
-    ui->tableViewSrcMech->setColumnWidth(3,75);
 
     modelMech = new ModelWirePartiMech(this);
     ui->tableViewMech->setModel(modelMech);
-    ui->tableViewMech->setColumnHidden(0,true);
-    ui->tableViewMech->setColumnHidden(1,true);
-    ui->tableViewMech->setColumnWidth(2,250);
-    ui->tableViewMech->setColumnWidth(3,75);
-    ui->tableViewMech->setColumnWidth(4,75);
-    ui->tableViewMech->setColumnWidth(5,250);*/
-
-    mapper = new QDataWidgetMapper(this);
 
     modelPartWire = new ModelPartWire(this);
     ui->tableViewPart->setModel(modelPartWire);
 
-    mapper->setModel(modelPartWire);
-    //mapper->addMapping(ui->lineEditSrcPart,modelPartWire->columnIndex("buht"));
-    /*mapper->addMapping(ui->lineEditPodt,9);
-    mapper->addMapping(ui->lineEditVol,10);
-    mapper->addMapping(ui->lineEditLine,11);
-    mapper->addMapping(ui->lineEditKvo,12);
-    mapper->addMapping(ui->lineEditComment,15);*/
-    qDebug()<<modelPartWire->columnIndex("buht");
-
+    connect(modelPartWire,SIGNAL(sigRefresh()),this,SLOT(updFinished()));
+    connect(modelNote,SIGNAL(sigRefresh()),this,SLOT(updNoteFinished()));
     connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(upd()));
     connect(ui->tableViewPart->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(currentIndexChanged(QModelIndex)));
     connect(ui->checkBoxOnly,SIGNAL(clicked(bool)),ui->comboBoxMarka,SLOT(setEnabled(bool)));
     connect(ui->comboBoxMarka,SIGNAL(currentIndexChanged(int)),this,SLOT(upd()));
     connect(ui->checkBoxOnly,SIGNAL(clicked(bool)),this,SLOT(upd()));
     connect(ui->toolButtonCopyTu,SIGNAL(clicked(bool)),this,SLOT(copyTu()));
-    connect(ui->tableViewShip,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(showShipSert(QModelIndex)));
-    //connect(editorPart,SIGNAL(signFinished()),modelShip,SLOT(select()));
-    connect(ui->pushButtonCert,SIGNAL(clicked(bool)),this,SLOT(showPartSert()));
+    connect(ui->tableViewShip,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(showShipCertificate(QModelIndex)));
+    connect(ui->pushButtonCert,SIGNAL(clicked(bool)),this,SLOT(showPartCertificate()));
     connect(ui->pushButtonSavePrim,SIGNAL(clicked(bool)),this,SLOT(savePrim()));
     connect(ui->plainTextEditPrim,SIGNAL(textChanged()),this,SLOT(enPrimSave()));
     connect(ui->toolButtonCopyChem,SIGNAL(clicked(bool)),this,SLOT(copyChem()));
-    connect(modelChem,SIGNAL(sigUpd()),modelPartWire,SLOT(refreshState()));
-    connect(modelMech,SIGNAL(sigUpd()),modelPartWire,SLOT(refreshState()));
-    connect(ui->pushButtonCode,SIGNAL(clicked(bool)),this,SLOT(showCheckForm()));
+    //connect(modelChem,SIGNAL(sigUpd()),modelPartWire,SLOT(refreshState()));
+    //connect(modelMech,SIGNAL(sigUpd()),modelPartWire,SLOT(refreshState()));
     //connect(Rels::instance(),SIGNAL(partReq(int,QString)),this,SLOT(findPart(int,QString)));
     upd();
 }
@@ -134,9 +97,9 @@ void FormPartWire::setLock(bool b)
 
 void FormPartWire::upd()
 {
-    /*if (sender()==ui->pushButtonUpd){
-        Rels::instance()->relProvol->refreshModel();
-    }*/
+    if (sender()==ui->pushButtonUpd){
+        RelModels::instance()->getModel("provol")->refresh();
+    }
     bool b=ui->checkBoxOnly->isChecked();
     if (b && sender()==ui->checkBoxOnly && ui->tableViewPart->model()->rowCount()){
         colVal d;
@@ -146,14 +109,23 @@ void FormPartWire::upd()
     int id_pr = b? ui->comboBoxMarka->getCurrentData().val.toInt() : -1;
 
     modelPartWire->refresh(ui->dateEditBeg->date(),ui->dateEditEnd->date(),id_pr);
-    /*ui->tableViewPart->setColumnHidden(0,true);
-    for (int i=8; i<ui->tableViewPart->model()->rowCount(); i++){
-        ui->tableViewPart->setColumnHidden(i,true);
-    }
-    ui->tableViewPart->resizeToContents();
-    int n=ui->tableViewPart->model()->rowCount();
-    if (n){
-        ui->tableViewPart->setCurrentIndex(ui->tableViewPart->model()->index(n-1,1));
+}
+
+void FormPartWire::updFinished()
+{
+    bool ok = ui->tableViewPart->model()->rowCount();
+    if (ok){
+        if (saved_id_part>=0){
+            int row=modelPartWire->findRowByKey(saved_id_part,"id");
+            if (row<0) {
+                row=ui->tableViewPart->model()->rowCount()-1;
+            }
+            ui->tableViewPart->selectRow(row);
+            ui->tableViewPart->scrollTo(ui->tableViewPart->model()->index(row,0));
+        } else {
+            ui->tableViewPart->selectRow(ui->tableViewPart->model()->rowCount()-1);
+            ui->tableViewPart->scrollToBottom();
+        }
     } else {
         ui->lineEditSrcPart->clear();
         ui->lineEditPodt->clear();
@@ -162,141 +134,136 @@ void FormPartWire::upd()
         ui->lineEditKvo->clear();
         ui->lineEditComment->clear();
         modelTuSrc->clear();
+        modelTu->clear();
+        modelNote->clear();
         modelShip->clear();
+        modelSrcChem->clear();
+        modelChem->clear();
+        modelSrcMech->clear();
+        modelMech->clear();
+    }
+    setLock(!ok);
+}
+
+void FormPartWire::updNoteFinished()
+{
+    if (modelNote->rowCount()){
+        ui->plainTextEditPrim->setPlainText(modelNote->getModelData(0,"prim_prod").toString());
+    } else {
         ui->plainTextEditPrim->clear();
     }
     ui->pushButtonSavePrim->setEnabled(false);
-    setLock(n<1);*/
 }
 
 void FormPartWire::currentIndexChanged(QModelIndex index)
 {
-    mapper->setCurrentIndex(index.row());
+    ui->lineEditSrcPart->setText(modelPartWire->getModelData(index.row(),"buht").toString());
+    ui->lineEditPodt->setText(modelPartWire->getModelData(index.row(),"podt").toString());
+    ui->lineEditVol->setText(modelPartWire->getModelData(index.row(),"rab").toString());
+    ui->lineEditLine->setText(modelPartWire->getModelData(index.row(),"line").toString());
+    ui->lineEditKvo->setText(QLocale().toString(modelPartWire->getModelData(index.row(),"kvo").toDouble(),'f',1));
+    ui->lineEditComment->setText(modelPartWire->getModelData(index.row(),"note").toString());
 
-    /*int id_part=ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(index.row(),0),Qt::EditRole).toInt();
-    int id_m=ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(index.row(),13),Qt::EditRole).toInt();
-    int id_prov=ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(index.row(),14),Qt::EditRole).toInt();
-    int id_buht=ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(index.row(),16),Qt::EditRole).toInt();
+    int id_part = modelPartWire->getModelData(index.row(),"id").toInt();
+    int id_prov = modelPartWire->getModelData(index.row(),"id_prov").toInt();
+    int id_m = modelPartWire->getModelData(index.row(),"id_m").toInt();
+    int id_buht = modelPartWire->getModelData(index.row(),"id_buht").toInt();
 
-    QSqlQuery queryTu;
-    queryTu.prepare("select g.id, g.nam from wire_gost as w "
-                    "inner join gost_new as g on w.id_gost=g.id "
-                    "where w.id_provol = :id_prov order by g.nam");
-    queryTu.bindValue(":id_prov",id_prov);
-    if (modelTuSrc->execQuery(queryTu)){
-        modelTuSrc->setHeaderData(1,Qt::Horizontal,QString::fromUtf8("Наименование"));
-        ui->tableViewSrcTu->setColumnHidden(0,true);
-        ui->tableViewSrcTu->resizeToContents();
-    }
+    saved_id_part=id_part;
 
-    modelTu->setFilter("wire_parti_gost.id_parti = "+QString::number(id_m));
-    modelTu->setDefaultValue(0,id_m);
+    modelTuSrc->setPath("api/wire/parti/tusrc/"+QString::number(id_prov));
+    modelTuSrc->select();
+
+    modelTu->setFilter(RestFilter::rule(modelTu->tableName(),"id_parti",RestFilter::Op::Eq,id_m));
+    modelTu->setDefaultValue("id_parti",id_m);
     modelTu->select();
 
-    QSqlQuery queryShip;
-    queryShip.prepare("select d.id, s.dat_vid, s.nom_s, p.short, d.m_netto, rp.short, d.ds_status "
-                      "from wire_shipment_consist as d "
-                      "inner join sertifikat as s on s.id=d.id_ship "
-                      "inner join poluch as p on s.id_pol=p.id "
-                      "inner join poluch as rp on d.id_pol=rp.id "
-                      "where d.id_wparti = :id_part order by s.dat_vid");
-    queryShip.bindValue(":id_part",id_part);
-    if (modelShip->execQuery(queryShip)){
-        modelShip->setHeaderData(1, Qt::Horizontal,tr("Дата"));
-        modelShip->setHeaderData(2, Qt::Horizontal,tr("№"));
-        modelShip->setHeaderData(3, Qt::Horizontal,tr("Получатель"));
-        modelShip->setHeaderData(4, Qt::Horizontal,tr("Масса, кг"));
-        modelShip->setHeaderData(5, Qt::Horizontal,tr("Реальный получатель"));
-        modelShip->setHeaderData(6, Qt::Horizontal,tr("ЭЦП"));
-        ui->tableViewShip->setColumnHidden(0,true);
-        ui->tableViewShip->resizeToContents();
-    }
+    modelShip->setPath("api/wire/parti/ship/"+QString::number(id_part));
+    modelShip->select();
 
-    QSqlQuery queryPrim;
-    queryPrim.prepare("select wp.prim_prod from wire_parti wp where wp.id = :id_part");
-    queryPrim.bindValue(":id_part",id_part);
-    if (queryPrim.exec()){
-        queryPrim.next();
-        ui->plainTextEditPrim->setPlainText(queryPrim.value(0).toString());
-        ui->pushButtonSavePrim->setEnabled(false);
-    } else {
-        QMessageBox::critical(this,tr("Ошибка"),queryPrim.lastError().text(),QMessageBox::Cancel);
-    }
+    modelNote->setPath("api/wire/parti/note/"+QString::number(id_part));
+    modelNote->select();
 
-    modelSrcChem->refresh(id_buht);
-    modelChem->refresh(id_m);
+    modelSrcChem->setFilter(RestFilter::rule(modelSrcChem->tableName(),"id_buht",RestFilter::Op::Eq,id_buht));
+    modelSrcChem->setDefaultValue("id_buht",id_buht);
+    modelSrcChem->select();
 
-    modelSrcMech->setDefaultValue(1,id_m);
-    modelSrcMech->setFilter("wire_mech.id_part = "+QString::number(id_m));
+    modelChem->setFilter(RestFilter::rule(modelChem->tableName(),"id_part",RestFilter::Op::Eq,id_m));
+    modelChem->setDefaultValue("id_part",id_m);
+    modelChem->select();
+
+    modelSrcMech->setFilter(RestFilter::rule(modelSrcMech->tableName(),"id_part",RestFilter::Op::Eq,id_m));
+    modelSrcMech->setDefaultValue("id_part",id_m);
     modelSrcMech->select();
 
-    modelMech->refresh(id_m);*/
+    modelMech->refresh(id_m);
 }
 
 void FormPartWire::copyTu()
 {
-    /*int row=ui->tableViewPart->currentIndex().row();
-    int id_m=ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(row,13),Qt::EditRole).toInt();
-    int id_prov=ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(row,14),Qt::EditRole).toInt();
-
-    QSqlQuery query;
-    query.prepare("insert into wire_parti_gost (id_parti, id_gost) "
-                  "(select :id_m, g.id_gost from wire_gost as g where g.id_provol = :id_prov)");
-    query.bindValue(":id_m",id_m);
-    query.bindValue(":id_prov",id_prov);
-    if (query.exec()){
+    int row=ui->tableViewPart->currentIndex().row();
+    if (row<0) return;
+    int id_m = modelPartWire->getModelData(row,"id_m").toInt();
+    QByteArray data;
+    bool ok = RestConnection::instance()->sendSyncRequest("api/wire/parti/copytu/"+QString::number(id_m),"POST","{}",data);
+    if (ok){
         modelTu->select();
-    } else {
-        QMessageBox::critical(this,"Error",query.lastError().text(),QMessageBox::Cancel);
-    }*/
+    }
 }
 
-void FormPartWire::showShipSert(QModelIndex index)
+void FormPartWire::showShipCertificate(QModelIndex index)
 {
-    /*if (index.isValid()){
-        int row=ui->tableViewPart->currentIndex().row();
-        int id_part=ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(row,0),Qt::EditRole).toInt();
-        QString n_s=ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(row,1),Qt::EditRole).toString();
-        QDate date=ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(row,2),Qt::EditRole).toDate();
-        int id_ship=ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(index.row(),0),Qt::EditRole).toInt();
-        QString name=n_s+"_"+QString::number(date.year())+"_"+ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(index.row(),2),Qt::EditRole).toString();
-        name=name.replace(QRegularExpression("[^\\w]"), "_");
-        int sign=ui->tableViewShip->model()->data(ui->tableViewShip->model()->index(index.row(),6),Qt::EditRole).toInt();
-        if (sign>0){
-            readerPart->setCurrentIdShip(id_ship,name,"wire");
-            readerPart->show();
-        } else {
-            sertificatPart->build(id_part,id_ship,name,"wire");
-            editorPart->show();
-        }
-    }*/
+    int currentIndex = ui->tableViewPart->currentIndex().row();
+    if (!modelPartWire->rowCount() || currentIndex < 0) {
+        return;
+    }
+    int id_part = modelPartWire->getModelData(currentIndex,"id").toInt();
+    int id_ship=modelShip->getModelData(index.row(),"id").toInt();
+    if (id_ship>0){
+        certDocument->build(id_part,id_ship,"wire");
+        certEditor->showNormal();
+        certEditor->show();
+        certEditor->raise();
+        certEditor->activateWindow();
+    }
 }
 
-void FormPartWire::showPartSert()
+void FormPartWire::showPartCertificate()
 {
-    /*int row=ui->tableViewPart->currentIndex().row();
-    int id_part=ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(row,0),Qt::EditRole).toInt();
-    QString n_s=ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(row,1),Qt::EditRole).toString();
-    QDate date=ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(row,2),Qt::EditRole).toDate();
-    QString name=n_s+"_"+QString::number(date.year());
-
-    sertificatPart->build(id_part,-1,name,"wire");
-    editorPart->show();*/
+    int currentIndex = ui->tableViewPart->currentIndex().row();
+    if (!modelPartWire->rowCount() || currentIndex < 0) {
+        return;
+    }
+    int id_part = modelPartWire->getModelData(currentIndex,"id").toInt();
+    certDocument->build(id_part,-1,"wire");
+    certEditor->showNormal();
+    certEditor->show();
+    certEditor->raise();
+    certEditor->activateWindow();
 }
 
 void FormPartWire::savePrim()
 {
-    /*int row=ui->tableViewPart->currentIndex().row();
-    int id_part=ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(row,0),Qt::EditRole).toInt();
-    QSqlQuery query;
-    query.prepare("update wire_parti set prim_prod = :prim where id = :id_part");
-    query.bindValue(":prim",ui->plainTextEditPrim->toPlainText());
-    query.bindValue(":id_part",id_part);
-    if (!query.exec()){
-        QMessageBox::critical(this,tr("Ошибка"),query.lastError().text(),QMessageBox::Cancel);
-    } else {
+    int currentIndex = ui->tableViewPart->currentIndex().row();
+    if (!modelPartWire->rowCount() || currentIndex < 0) {
         ui->pushButtonSavePrim->setEnabled(false);
-    }*/
+        return;
+    }
+
+    int id_part = modelPartWire->getModelData(currentIndex,"id").toInt();
+
+    QByteArray data;
+
+    QJsonDocument doc;
+    QJsonObject object;
+    object.insert("prim_prod",ui->plainTextEditPrim->toPlainText());
+    doc.setObject(object);
+    QByteArray body=doc.toJson();
+
+    bool res = RestConnection::instance()->sendSyncRequest("api/wire/parti/patch/"+QString::number(id_part),"PATCH",body,data);
+    if (res) {
+        ui->pushButtonSavePrim->setEnabled(false);
+    }
 }
 
 void FormPartWire::enPrimSave()
@@ -306,36 +273,23 @@ void FormPartWire::enPrimSave()
 
 void FormPartWire::copyChem()
 {
-    /*if (!modelSrcChem->rowCount()) return;
+    if (!modelSrcChem->rowCount()) return;
     int row=ui->tableViewPart->currentIndex().row();
-    int id_m=ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(row,13),Qt::EditRole).toInt();
+    if (row<0) return;
+    int id_m=modelPartWire->getModelData(row,"id_m").toInt();
     if (!modelChem->isEmpty()){
         QMessageBox::information(this,tr("Предупреждение"),tr("Сначала удалите все уже существующие элементы!"),QMessageBox::Ok);
         return;
     }
     int n=QMessageBox::question(this,tr("Подтвердите действия"),tr("Скопировать значения?"),QMessageBox::Yes,QMessageBox::No);
     if (n==QMessageBox::Yes){
-        QSqlQuery query;
-        query.prepare("insert into wire_parti_chem (id_part, id_chem, value ) "
-                      "(select :id_part1, pr.id_el, pr.kvo from prov_chem as pr "
-                      "where pr.id_buht=(select p.id_buht from wire_parti_m as p where p.id= :id_part2 ))");
-        query.bindValue(":id_part1",id_m);
-        query.bindValue(":id_part2",id_m);
-        if (query.exec()){
+        QByteArray data;
+        bool ok = RestConnection::instance()->sendSyncRequest("api/wire/parti/copychem/"+QString::number(id_m),"POST","{}",data);
+        if (ok){
             modelPartWire->refreshState();
             modelChem->select();
-        } else {
-            QMessageBox::critical(NULL,tr("Error"),query.lastError().text(),QMessageBox::Ok);
         }
-    }*/
-}
-
-void FormPartWire::showCheckForm()
-{
-    /*CheckForm *f = new CheckForm();
-    f->setCheckEl(false);
-    f->show();
-    connect(f,SIGNAL(sigClose()),f,SLOT(deleteLater()));*/
+    }
 }
 
 void FormPartWire::findPart(int id_part, QString prefix)
@@ -360,7 +314,7 @@ void FormPartWire::findPart(int id_part, QString prefix)
 
 ModelPartWire::ModelPartWire(QWidget *parent) : RestRoTableModel(parent)
 {
-    //setDecimal(1);
+
 }
 
 void ModelPartWire::refresh(QDate beg, QDate end, int id_provol)
@@ -399,37 +353,51 @@ void ModelPartWire::refreshState()
     }*/
 }
 
-ModelWirePartiMech::ModelWirePartiMech(QObject *parent):RestTableModel("wire_parti_mech",parent)
+ModelWirePartiMech::ModelWirePartiMech(QObject *parent):RestTableModel("wire_sert_mech",parent)
 {
-    /*addColumn("id","id");
-    addColumn("id_part","id_part");
-    addColumn("id_mech",tr("Параметр"),Rels::instance()->relMech);
-    addColumn("value",tr("Значен."));
-    addColumn("value_max",tr("Значен.-2"));
-    addColumn("id_cat",tr("Категория"),Rels::instance()->relMechCat);
-    setSort("mech_tbl.nam");
-    setDecimals(3,3);
-    setDecimals(4,3);*/
+    modelCats = new RestRoTableModel(this);
+    modelCats->setPath("api/wire/parti/mechcats/get");
+
+    connect(modelCats,SIGNAL(sigRefresh()),this,SLOT(refreshCatsFinished()));
+
+    modelCats->select();
 }
 
 void ModelWirePartiMech::refresh(int id_part)
 {
-    /*setFilter("wire_parti_mech.id_part="+QString::number(id_part));
-    setDefaultValue(1,id_part);
-    select();*/
+    setFilter(RestFilter::rule(tableName(),"id_part",RestFilter::Op::Eq,id_part));
+    setDefaultValue("id_part",id_part);
+    select();
 }
 
 bool ModelWirePartiMech::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    /*if (index.column()==2 && role==Qt::EditRole){
-        int id_cat=0;
+    if ((index.column()==columnIndex("id_mech")) && role==Qt::EditRole){
         int id_mech=value.toInt();
-        if (id_mech==1 || id_mech==2 || id_mech==3 || id_mech==21)
-            id_cat=0;
-        else if (id_mech==23 || id_mech==24)
-            id_cat=1;
-        else id_cat=2;
-        DbTableModel::setData(this->index(index.row(),5),id_cat,role);
-    }*/
+        int id_cat=mapCat.value(id_mech,2);
+        int columnCat = columnIndex("id_cat");
+        if (columnCat>=0 && isColumnRel(columnCat)){
+            RestRelModel *relModel = RelModels::instance()->getModel(columnInfo(columnCat).relnam);
+            int row = relModel->findRowByKey(id_cat);
+            if (row>=0){
+                colVal cat = relModel->getModelData(row);
+                RestTableModel::setData(this->index(index.row(),columnCat),cat.val,Qt::EditRole);
+                RestTableModel::setData(this->index(index.row(),columnCat),cat.disp,Qt::DisplayRole);
+            }
+        }
+    }
     return RestTableModel::setData(index,value,role);
+}
+
+void ModelWirePartiMech::refreshCats()
+{
+    modelCats->select();
+}
+
+void ModelWirePartiMech::refreshCatsFinished()
+{
+    mapCat.clear();
+    for (int i=0; i<modelCats->rowCount();i++){
+        mapCat.insert(modelCats->getModelData(i,"id").toInt(),modelCats->getModelData(i,"id_wire_cat").toInt());
+    }
 }

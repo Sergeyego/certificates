@@ -190,3 +190,22 @@ void RestRelModel::onResult()
 
     processNextRequest();
 }
+
+int RestRelModel::findRowByKey(QVariant key) const
+{
+    if (key.isNull() || _data.isEmpty()) {
+        return -1;
+    }
+
+    // Сравниваем через toString(), чтобы int(1), double(1.0) и QString("1")
+    // считались одним и тем же ключом (как это делает сервер и RestComboBox)
+    const QString target = key.toString();
+
+    for (int row = 0; row < _data.size(); ++row) {
+        if (_data.at(row).val.toString() == target) {
+            return row;
+        }
+    }
+
+    return -1;
+}
