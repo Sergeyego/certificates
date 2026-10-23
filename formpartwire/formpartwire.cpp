@@ -18,6 +18,11 @@ FormPartWire::FormPartWire(QWidget *parent)
     ui->dateEditEnd->setDate(ui->dateEditBeg->date().addYears(1));
 
     ui->comboBoxMarka->setModel(RelModels::instance()->getModel("provol"));
+    ui->comboBoxDiam->setModel(RelModels::instance()->getModel("wire_diam"));
+    colVal empVal;
+    empVal.val=-1;
+    ui->comboBoxMarka->setCurrentData(empVal);
+    ui->comboBoxDiam->setCurrentData(empVal);
 
     modelTuSrc = new RestRoTableModel(this);
     ui->tableViewSrcTu->setModel(modelTuSrc);
@@ -31,9 +36,11 @@ FormPartWire::FormPartWire(QWidget *parent)
     modelNote = new RestRoTableModel(this);
 
     modelSrcChem = new RestTableModel("prov_chem",this);
+    modelSrcChem->setPath("api/wire/parti/chem/buth");
     ui->tableViewSrcChem->setModel(modelSrcChem);
 
     modelChem = new RestTableModel("wire_parti_chem",this);
+    modelChem->setPath("api/wire/parti/chem/part");
     ui->tableViewChem->setModel(modelChem);
 
     modelSrcMech = new RestTableModel("wire_parti_mech",this);
@@ -41,6 +48,9 @@ FormPartWire::FormPartWire(QWidget *parent)
 
     modelMech = new ModelWirePartiMech(this);
     ui->tableViewMech->setModel(modelMech);
+
+    modelMechx = new RestTableModel("wire_sert_mechx",this);
+    ui->tableViewMechx->setModel(modelMechx);
 
     modelPartWire = new ModelPartWire(this);
     ui->tableViewPart->setModel(modelPartWire);
@@ -50,17 +60,18 @@ FormPartWire::FormPartWire(QWidget *parent)
     connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(upd()));
     connect(ui->tableViewPart->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(currentIndexChanged(QModelIndex)));
     connect(ui->checkBoxOnly,SIGNAL(clicked(bool)),ui->comboBoxMarka,SLOT(setEnabled(bool)));
+    connect(ui->checkBoxOnly,SIGNAL(clicked(bool)),ui->comboBoxDiam,SLOT(setEnabled(bool)));
     connect(ui->comboBoxMarka,SIGNAL(currentIndexChanged(int)),this,SLOT(upd()));
+    connect(ui->comboBoxDiam,SIGNAL(currentIndexChanged(int)),this,SLOT(upd()));
     connect(ui->checkBoxOnly,SIGNAL(clicked(bool)),this,SLOT(upd()));
     connect(ui->toolButtonCopyTu,SIGNAL(clicked(bool)),this,SLOT(copyTu()));
     connect(ui->tableViewShip,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(showShipCertificate(QModelIndex)));
     connect(ui->pushButtonCert,SIGNAL(clicked(bool)),this,SLOT(showPartCertificate()));
     connect(ui->pushButtonSavePrim,SIGNAL(clicked(bool)),this,SLOT(savePrim()));
-    connect(ui->plainTextEditPrim,SIGNAL(textChanged()),this,SLOT(enPrimSave()));
+    connect(ui->lineEditPrimProd,SIGNAL(textChanged(QString)),this,SLOT(enPrimSave()));
     connect(ui->toolButtonCopyChem,SIGNAL(clicked(bool)),this,SLOT(copyChem()));
-    //connect(modelChem,SIGNAL(sigUpd()),modelPartWire,SLOT(refreshState()));
-    //connect(modelMech,SIGNAL(sigUpd()),modelPartWire,SLOT(refreshState()));
-    //connect(Rels::instance(),SIGNAL(partReq(int,QString)),this,SLOT(findPart(int,QString)));
+    connect(modelChem,SIGNAL(sigUpd()),this,SLOT(refreshState()));
+    connect(modelMech,SIGNAL(sigUpd()),this,SLOT(refreshState()));
     upd();
 }
 
@@ -86,29 +97,65 @@ void FormPartWire::setLock(bool b)
 {
     ui->tableViewTu->setEnabled(!b);
     ui->toolButtonCopyTu->setEnabled(!b);
-    ui->plainTextEditPrim->setEnabled(!b);
+    ui->lineEditPrimProd->setEnabled(!b);
     ui->tableViewSrcChem->setEnabled(!b);
     ui->tableViewChem->setEnabled(!b);
     ui->toolButtonCopyChem->setEnabled(!b);
     ui->tableViewSrcMech->setEnabled(!b);
     ui->tableViewMech->setEnabled(!b);
+    ui->tableViewMechx->setEnabled(!b);
     ui->pushButtonCert->setEnabled(!b);
+}
+
+void FormPartWire::refreshState()
+{
+    int currentIndex = ui->tableViewPart->currentIndex().row();
+    if (!modelPartWire->rowCount() || currentIndex < 0) {
+        return;
+    }
+    int id_m = modelPartWire->getModelData(currentIndex,"id_m").toInt();
+    modelPartWire->refreshState(id_m);
 }
 
 void FormPartWire::upd()
 {
     if (sender()==ui->pushButtonUpd){
+        QVector<RestTableModel*> arrMod;
+        arrMod.push_back(modelTu);
+        arrMod.push_back(modelSrcChem);
+        arrMod.push_back(modelSrcMech);
+        arrMod.push_back(modelChem);
+        arrMod.push_back(modelMech);
+        arrMod.push_back(modelMechx);
+        RelModels::instance()->updateRels(arrMod);
         RelModels::instance()->getModel("provol")->refresh();
+        RelModels::instance()->getModel("wire_diam")->refresh();
     }
-    bool b=ui->checkBoxOnly->isChecked();
-    if (b && sender()==ui->checkBoxOnly && ui->tableViewPart->model()->rowCount()){
-        colVal d;
-        d.val=ui->tableViewPart->model()->data(ui->tableViewPart->model()->index(ui->tableViewPart->currentIndex().row(),14),Qt::EditRole).toInt();
-        ui->comboBoxMarka->setCurrentData(d);
-    }
-    int id_pr = b? ui->comboBoxMarka->getCurrentData().val.toInt() : -1;
 
-    modelPartWire->refresh(ui->dateEditBeg->date(),ui->dateEditEnd->date(),id_pr);
+    bool b = ui->checkBoxOnly->isChecked();
+    if (b && sender()==ui->checkBoxOnly && ui->tableViewPart->model()->rowCount()){
+        int currRow = ui->tableViewPart->currentIndex().row();
+        if (currRow >= 0) {
+            colVal d;
+            d.val = modelPartWire->getModelData(currRow, "id_prov");
+            ui->comboBoxMarka->setCurrentData(d);
+        }
+    }
+
+    // id_pr: -1 если фильтр не нужен или ничего не выбрано.
+    // Если выбран элемент (включая ключ 0), currentIndex() будет >= 0.
+    int id_pr = -1;
+    if (b && ui->comboBoxMarka->currentIndex() >= 0) {
+        id_pr = ui->comboBoxMarka->getCurrentData().val.toInt();
+    }
+
+    // id_diam: аналогично.
+    int id_diam = -1;
+    if (ui->comboBoxDiam->currentIndex() >= 0) {
+        id_diam = ui->comboBoxDiam->getCurrentData().val.toInt();
+    }
+
+    modelPartWire->refresh(ui->dateEditBeg->date(), ui->dateEditEnd->date(), id_pr, id_diam);
 }
 
 void FormPartWire::updFinished()
@@ -141,6 +188,7 @@ void FormPartWire::updFinished()
         modelChem->clear();
         modelSrcMech->clear();
         modelMech->clear();
+        modelMechx->clear();
     }
     setLock(!ok);
 }
@@ -148,15 +196,37 @@ void FormPartWire::updFinished()
 void FormPartWire::updNoteFinished()
 {
     if (modelNote->rowCount()){
-        ui->plainTextEditPrim->setPlainText(modelNote->getModelData(0,"prim_prod").toString());
+        ui->lineEditPrimProd->setText(modelNote->getModelData(0,"prim_prod").toString());
     } else {
-        ui->plainTextEditPrim->clear();
+        ui->lineEditPrimProd->clear();
     }
     ui->pushButtonSavePrim->setEnabled(false);
 }
 
 void FormPartWire::currentIndexChanged(QModelIndex index)
 {
+    if (index.row() < 0) {
+        ui->lineEditSrcPart->clear();
+        ui->lineEditPodt->clear();
+        ui->lineEditVol->clear();
+        ui->lineEditLine->clear();
+        ui->lineEditKvo->clear();
+        ui->lineEditComment->clear();
+
+        modelTuSrc->clear();
+        modelTu->clear();
+        modelShip->clear();
+        modelNote->clear();
+        modelSrcChem->clear();
+        modelChem->clear();
+        modelSrcMech->clear();
+        modelMech->clear();
+        modelMechx->clear();
+
+        saved_id_part = -1;
+        return;
+    }
+
     ui->lineEditSrcPart->setText(modelPartWire->getModelData(index.row(),"buht").toString());
     ui->lineEditPodt->setText(modelPartWire->getModelData(index.row(),"podt").toString());
     ui->lineEditVol->setText(modelPartWire->getModelData(index.row(),"rab").toString());
@@ -195,6 +265,10 @@ void FormPartWire::currentIndexChanged(QModelIndex index)
     modelSrcMech->setFilter(RestFilter::rule(modelSrcMech->tableName(),"id_part",RestFilter::Op::Eq,id_m));
     modelSrcMech->setDefaultValue("id_part",id_m);
     modelSrcMech->select();
+
+    modelMechx->setFilter(RestFilter::rule(modelMechx->tableName(),"id_part",RestFilter::Op::Eq,id_m));
+    modelMechx->setDefaultValue("id_part",id_m);
+    modelMechx->select();
 
     modelMech->refresh(id_m);
 }
@@ -256,7 +330,7 @@ void FormPartWire::savePrim()
 
     QJsonDocument doc;
     QJsonObject object;
-    object.insert("prim_prod",ui->plainTextEditPrim->toPlainText());
+    object.insert("prim_prod",ui->lineEditPrimProd->text());
     doc.setObject(object);
     QByteArray body=doc.toJson();
 
@@ -286,7 +360,7 @@ void FormPartWire::copyChem()
         QByteArray data;
         bool ok = RestConnection::instance()->sendSyncRequest("api/wire/parti/copychem/"+QString::number(id_m),"POST","{}",data);
         if (ok){
-            modelPartWire->refreshState();
+            this->refreshState();
             modelChem->select();
         }
     }
@@ -294,20 +368,15 @@ void FormPartWire::copyChem()
 
 void FormPartWire::findPart(int id_part, QString prefix)
 {
-    /*if (prefix!="wire"){
+    if (prefix!="wire"){
         return;
     }
-    bool ok=false;
-    for (int i=0; i<modelPartWire->rowCount(); i++){
-        if (id_part==modelPartWire->data(modelPartWire->index(i,0),Qt::EditRole).toInt()){
-            ui->tableViewPart->selectRow(i);
-            ok=true;
-            break;
-        }
-    }
-    if (!ok){
+    int row = modelPartWire->findRowByKey(id_part,"id");
+    if (row>=0){
+        ui->tableViewPart->selectRow(row);
+    } else {
         QMessageBox::information(this,tr("Информация"),tr("Не найдено такой партии за указанный период"),QMessageBox::Ok);
-    }*/
+    }
 }
 
 
@@ -317,40 +386,53 @@ ModelPartWire::ModelPartWire(QWidget *parent) : RestRoTableModel(parent)
 
 }
 
-void ModelPartWire::refresh(QDate beg, QDate end, int id_provol)
+void ModelPartWire::refresh(QDate beg, QDate end, int id_provol, int id_diam)
 {
     QUrlQuery query;
     query.addQueryItem("id_prov",QString::number(id_provol));
-    //query.addQueryItem("diam",diam);
+    query.addQueryItem("id_diam",QString::number(id_diam));
     setPath("api/wire/parti/list/"+beg.toString("yyyy-MM-dd")+"/"+end.toString("yyyy-MM-dd")+"?"+query.toString());
     this->select();
 }
 
 
-void ModelPartWire::refreshState()
+void ModelPartWire::refreshState(int id_m)
 {
-    /*QSqlQuery query;
-    query.setForwardOnly(true);
-    query.prepare("select wire_parti_m.id, "
-                  "(select case when exists(select id from wire_parti_chem where id_part=wire_parti_m.id) "
-                  "then 1 else 0 end "
-                  "+ "
-                  "case when exists(select id from wire_parti_mech where id_part=wire_parti_m.id) "
-                  "then 2 else 0 end "
-                  "as r) from wire_parti_m where wire_parti_m.dat between :d1 and :d2");
-    query.bindValue(":d1",dateBeg);
-    query.bindValue(":d2",dateEnd);
-    if (query.exec()){
-        colorState.clear();
-        while (query.next()){
-            colorState[query.value(0).toInt()]=query.value(1).toInt();
+    QUrl url = QUrl(RestConnection::instance()->getUrl()+"/api/wire/parti/color/"+QString::number(id_m));
+
+    QNetworkReply *reply = RestConnection::instance()->sendGet(url);
+    connect(reply,SIGNAL(finished()),this,SLOT(refreshStateFinished()));
+}
+
+void ModelPartWire::refreshStateFinished()
+{
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    if (!reply) return;
+
+    const auto err = reply->error();
+    const QString errStr = reply->errorString();
+    reply->deleteLater();
+
+    if (err == QNetworkReply::OperationCanceledError) return;
+
+    const QByteArray data = reply->readAll(); // readAll только после проверки отмены
+    if (err != QNetworkReply::NoError) {
+        RestError::critical(tr("Ошибка"), errStr + "\n" + data);
+        return;
+    }
+
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+    QColor color = QColor(doc.object().value("color").toString());
+    int id_m = doc.object().value("id").toInt();
+
+    for (int i=0; i<rowCount(); i++){
+        if (getModelData(i,"id_m").toInt()==id_m){
+            for (int j = 0; j < this->columnCount(); ++j) {
+                modelData[i][j].background = color;
+            }
+            emit dataChanged(this->index(i, 0), this->index(i, columnCount() - 1));
         }
-        if (this->rowCount()){
-            emit dataChanged(this->index(0,0),this->index(this->rowCount()-1,this->columnCount()-1));
-        }
-    } else {
-        QMessageBox::critical(NULL,tr("Error"),query.lastError().text(),QMessageBox::Ok);
-    }*/
+    }
 }
 
 ModelWirePartiMech::ModelWirePartiMech(QObject *parent):RestTableModel("wire_sert_mech",parent)

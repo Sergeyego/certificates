@@ -447,6 +447,19 @@ void FormPartEl::createPasport()
     }
 }
 
+void FormPartEl::findPart(int id_part, QString prefix)
+{
+    if (prefix!="elrtr"){
+        return;
+    }
+    int row = modelPart->findRowByKey(id_part,"id");
+    if (row>=0){
+        ui->tableViewPart->selectRow(row);
+    } else {
+        QMessageBox::information(this,tr("Информация"),tr("Не найдено такой партии за указанный период"),QMessageBox::Ok);
+    }
+}
+
 ModelPart::ModelPart(QObject *parent) : RestRoTableModel(parent)
 {
 

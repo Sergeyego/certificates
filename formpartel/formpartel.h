@@ -74,6 +74,9 @@ private slots:
     void showShipCertificate(QModelIndex index);
     void createPasport();
 
+public slots:
+    void findPart(int id_part, QString prefix);
+
 };
 
 #endif // FORMPARTEL_H

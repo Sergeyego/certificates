@@ -12,10 +12,13 @@ class ModelPartWire : public RestRoTableModel
 
 public:
     explicit ModelPartWire(QWidget *parent = nullptr);
-    void refresh(QDate beg, QDate end, int id_provol);
+    void refresh(QDate beg, QDate end, int id_provol, int id_diam);
 
 public slots:
-    void refreshState();
+    void refreshState(int id_m);
+
+private slots:
+    void refreshStateFinished();
 
 private:
     QDate dateBeg;
@@ -68,11 +71,13 @@ private:
     RestTableModel *modelChem;
     RestTableModel *modelSrcMech;
     ModelWirePartiMech *modelMech;
+    RestTableModel *modelMechx;
     void loadSettings();
     void saveSettings();
     void setLock(bool b);
 
 private slots:
+    void refreshState();
     void upd();
     void updFinished();
     void updNoteFinished();
@@ -83,6 +88,8 @@ private slots:
     void savePrim();
     void enPrimSave();
     void copyChem();
+
+public slots:
     void findPart(int id_part, QString prefix);
 };
 

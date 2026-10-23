@@ -176,15 +176,14 @@ void RestRelModel::onResult()
 
     // 5. Успешное выполнение
     const QJsonArray arr = doc.array();
-    beginResetModel();
-    _data.clear();
+    QList<colVal> tmp;
     for (const QJsonValue &value : arr) {
         colVal row;
         row.val=value.toObject().value("key").toVariant();
         row.disp=value.toObject().value("disp").toString();
-        _data.push_back(row);
+        tmp.push_back(row);
     }
-    endResetModel();
+    setMolelData(tmp);
 
     emit refreshFinished(pattern);
 
@@ -208,4 +207,11 @@ int RestRelModel::findRowByKey(QVariant key) const
     }
 
     return -1;
+}
+
+void RestRelModel::setMolelData(const QList<colVal> &data)
+{
+    beginResetModel();
+    _data=data;
+    endResetModel();
 }

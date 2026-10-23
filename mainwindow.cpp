@@ -63,23 +63,39 @@ void MainWindow::clearEmptyMenus()
     }
 }
 
+void MainWindow::partReq(int id_part, QString prefix)
+{
+    if (prefix=="elrtr"){
+        ui->actionPartEl->trigger();
+    } else {
+        ui->actionPartWire->trigger();
+    }
+    emit findPart(id_part,prefix);
+}
+
 void MainWindow::newFormPartEl()
 {
     if (!tabManager->exist(sender())){
-        tabManager->addSubWindow(new FormPartEl(),sender());
+        FormPartEl *formPartEl = new FormPartEl();
+        connect(this,SIGNAL(findPart(int,QString)),formPartEl,SLOT(findPart(int,QString)));
+        tabManager->addSubWindow(formPartEl,sender());
     }
 }
 
 void MainWindow::newFormShip()
 {
     if (!tabManager->exist(sender())){
-        tabManager->addSubWindow(new FormShip(),sender());
+        FormShip *formShip = new FormShip();
+        connect(formShip,SIGNAL(partReq(int,QString)),this,SLOT(partReq(int,QString)));
+        tabManager->addSubWindow(formShip,sender());
     }
 }
 
 void MainWindow::newFormPartWire()
 {
     if (!tabManager->exist(sender())){
-        tabManager->addSubWindow(new FormPartWire(),sender());
+        FormPartWire *formPartWire = new FormPartWire();
+        connect(this,SIGNAL(findPart(int,QString)),formPartWire,SLOT(findPart(int,QString)));
+        tabManager->addSubWindow(formPartWire,sender());
     }
 }

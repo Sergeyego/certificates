@@ -31,8 +31,12 @@ private:
     void clearEmptyMenus();
 
 private slots:
+    void partReq(int id_part, QString prefix);
     void newFormPartEl();
     void newFormPartWire();
     void newFormShip();
+
+signals:
+    void findPart(int id_part, QString prefix);
 };
 #endif // MAINWINDOW_H

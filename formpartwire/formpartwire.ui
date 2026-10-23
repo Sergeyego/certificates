@@ -117,6 +117,36 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>Диам.</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="RestComboBox" name="comboBoxDiam">
+           <property name="minimumSize">
+            <size>
+             <width>70</width>
+             <height>0</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
         </layout>
        </item>
       </layout>
@@ -218,6 +248,34 @@
         </layout>
        </item>
        <item>
+        <widget class="QLabel" name="label_15">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Специальные свойства:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="RestTableView" name="tableViewMechx">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>100</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
         <layout class="QHBoxLayout" name="horizontalLayout_8">
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -229,7 +287,7 @@
               </font>
              </property>
              <property name="text">
-              <string>Нормативная документация</string>
+              <string>Нормативная документация:</string>
              </property>
             </widget>
            </item>
@@ -291,7 +349,7 @@
               </font>
              </property>
              <property name="text">
-              <string>Отгрузки</string>
+              <string>Отгрузки:</string>
              </property>
             </widget>
            </item>
@@ -321,7 +379,7 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_7">
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_4">
+          <layout class="QVBoxLayout" name="verticalLayout_9">
            <item>
             <widget class="QLabel" name="label_9">
              <property name="maximumSize">
@@ -341,19 +399,18 @@
             </widget>
            </item>
            <item>
-            <widget class="QPlainTextEdit" name="plainTextEditPrim">
-             <property name="maximumSize">
-              <size>
-               <width>150</width>
-               <height>16777215</height>
-              </size>
-             </property>
-            </widget>
+            <widget class="QLineEdit" name="lineEditPrimProd"/>
            </item>
            <item>
             <widget class="QPushButton" name="pushButtonSavePrim">
              <property name="enabled">
               <bool>false</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
              </property>
              <property name="maximumSize">
               <size>
@@ -367,17 +424,19 @@
             </widget>
            </item>
            <item>
-            <spacer name="verticalSpacer">
-             <property name="orientation">
-              <enum>Qt::Orientation::Vertical</enum>
+            <widget class="QLabel" name="label_13">
+             <property name="font">
+              <font>
+               <bold>true</bold>
+              </font>
              </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
+             <property name="text">
+              <string>Механика:</string>
              </property>
-            </spacer>
+            </widget>
+           </item>
+           <item>
+            <widget class="RestTableView" name="tableViewSrcMech"/>
            </item>
           </layout>
          </item>
@@ -391,7 +450,7 @@
               </font>
              </property>
              <property name="text">
-              <string>Химия</string>
+              <string>Химия:</string>
              </property>
             </widget>
            </item>
@@ -409,6 +468,12 @@
                 <size>
                  <width>0</width>
                  <height>300</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>180</width>
+                 <height>16777215</height>
                 </size>
                </property>
                <property name="editTriggers">
@@ -440,72 +505,29 @@
                  <height>300</height>
                 </size>
                </property>
+               <property name="maximumSize">
+                <size>
+                 <width>190</width>
+                 <height>16777215</height>
+                </size>
+               </property>
               </widget>
              </item>
             </layout>
            </item>
           </layout>
          </item>
-         <item>
-          <spacer name="horizontalSpacer_5">
-           <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
         </layout>
        </item>
        <item>
-        <layout class="QVBoxLayout" name="verticalLayout_6">
-         <item>
-          <widget class="QLabel" name="label_13">
-           <property name="font">
-            <font>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="text">
-            <string>Механика</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_10">
-           <item>
-            <widget class="RestTableView" name="tableViewSrcMech">
-             <property name="minimumSize">
-              <size>
-               <width>300</width>
-               <height>200</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>380</width>
-               <height>16777215</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="RestTableView" name="tableViewMech">
-             <property name="minimumSize">
-              <size>
-               <width>500</width>
-               <height>0</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
+        <widget class="RestTableView" name="tableViewMech">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>200</height>
+          </size>
+         </property>
+        </widget>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_9">
