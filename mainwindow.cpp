@@ -11,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent)
     actAction(ui->actionPartEl,&MainWindow::newFormPartEl,1);
     actAction(ui->actionPartWire,&MainWindow::newFormPartWire,1);
     actAction(ui->actionShipCert,&MainWindow::newFormShip,1);
+    actAction(ui->actionDoc,&MainWindow::newFormDoc,1);
 
     tabManager->loadSettings();
     loadSettings();
@@ -63,6 +64,29 @@ void MainWindow::clearEmptyMenus()
     }
 }
 
+void MainWindow::updSite()
+{
+    QNetworkReply *reply = RestConnection::instance()->sendGet(RestConnection::instance()->buildUrl("api/site/sync"));
+    connect(reply,SIGNAL(finished()),this,SLOT(updSiteFinished()));
+    //prd->show();
+}
+
+void MainWindow::updSiteFinished()
+{
+    //prd->hide();
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    if (reply){
+        QByteArray data=reply->readAll();
+        bool ok=(reply->error()==QNetworkReply::NoError);
+        if (!ok){
+            RestError::critical(tr("Ошибка"),reply->errorString()+"\n"+data);
+        } else {
+            QMessageBox::information(this,QString::fromUtf8("Обновление завершено"),data,QMessageBox::Ok);
+        }
+        reply->deleteLater();
+    }
+}
+
 void MainWindow::partReq(int id_part, QString prefix)
 {
     if (prefix=="elrtr"){
@@ -88,6 +112,15 @@ void MainWindow::newFormShip()
         FormShip *formShip = new FormShip();
         connect(formShip,SIGNAL(partReq(int,QString)),this,SLOT(partReq(int,QString)));
         tabManager->addSubWindow(formShip,sender());
+    }
+}
+
+void MainWindow::newFormDoc()
+{
+    if (!tabManager->exist(sender())){
+        FormDoc *formDoc = new FormDoc();
+        connect(formDoc,SIGNAL(reqUpdSite()),this,SLOT(updSite()));
+        tabManager->addSubWindow(formDoc,sender());
     }
 }
 

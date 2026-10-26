@@ -13,8 +13,11 @@ SOURCES += \
     dialogauthor/dialogauthor.cpp \
     dialogcopyvalel/dialogcopyvalel.cpp \
     dialoglabels/dialoglabels.cpp \
+    formdoc/formdoc.cpp \
+    formdoc/modeldoc.cpp \
     formpartel/formpartel.cpp \
     formpartwire/formpartwire.cpp \
+    formpartwire/modelwirepartimech.cpp \
     formship/formship.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -43,8 +46,11 @@ HEADERS += \
     dialogauthor/dialogauthor.h \
     dialogcopyvalel/dialogcopyvalel.h \
     dialoglabels/dialoglabels.h \
+    formdoc/formdoc.h \
+    formdoc/modeldoc.h \
     formpartel/formpartel.h \
     formpartwire/formpartwire.h \
+    formpartwire/modelwirepartimech.h \
     formship/formship.h \
     mainwindow.h \
     pasportmanager.h \
@@ -71,6 +77,7 @@ FORMS += \
     dialogauthor/dialogauthor.ui \
     dialogcopyvalel/dialogcopyvalel.ui \
     dialoglabels/dialoglabels.ui \
+    formdoc/formdoc.ui \
     formpartel/formpartel.ui \
     formpartwire/formpartwire.ui \
     formship/formship.ui \
@@ -87,4 +94,5 @@ win32:RC_FILE = ico.rc
 macx:ICON = ico.icns
 
 RESOURCES += \
+    formdoc/res.qrc \
     res.qrc

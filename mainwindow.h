@@ -7,6 +7,7 @@
 #include "formpartel/formpartel.h"
 #include "formpartwire/formpartwire.h"
 #include "formship/formship.h"
+#include "formdoc/formdoc.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -31,10 +32,13 @@ private:
     void clearEmptyMenus();
 
 private slots:
+    void updSite();
+    void updSiteFinished();
     void partReq(int id_part, QString prefix);
     void newFormPartEl();
     void newFormPartWire();
     void newFormShip();
+    void newFormDoc();
 
 signals:
     void findPart(int id_part, QString prefix);

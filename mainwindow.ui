@@ -46,7 +46,7 @@
     <property name="title">
      <string>Сертификация</string>
     </property>
-    <addaction name="action_4"/>
+    <addaction name="actionDoc"/>
    </widget>
    <widget class="QMenu" name="menu_4">
     <property name="title">
@@ -85,7 +85,7 @@
     <string>F5</string>
    </property>
   </action>
-  <action name="action_4">
+  <action name="actionDoc">
    <property name="text">
     <string>Свидетельства и документы</string>
    </property>
