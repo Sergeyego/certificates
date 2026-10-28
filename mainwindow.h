@@ -8,6 +8,7 @@
 #include "formpartwire/formpartwire.h"
 #include "formship/formship.h"
 #include "formdoc/formdoc.h"
+#include "formmarkel/formmarkel.h"
 #include "progressreportdialog/progressreportdialog.h"
 
 QT_BEGIN_NAMESPACE
@@ -40,6 +41,7 @@ private slots:
     void newFormPartWire();
     void newFormShip();
     void newFormDoc();
+    void newFormMarkEl();
 
 signals:
     void findPart(int id_part, QString prefix);

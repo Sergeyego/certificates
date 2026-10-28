@@ -52,7 +52,7 @@
     <property name="title">
      <string>Справочники</string>
     </property>
-    <addaction name="action_5"/>
+    <addaction name="actionMarkEl"/>
     <addaction name="action_6"/>
     <addaction name="action_7"/>
    </widget>
@@ -90,7 +90,7 @@
     <string>Свидетельства и документы</string>
    </property>
   </action>
-  <action name="action_5">
+  <action name="actionMarkEl">
    <property name="text">
     <string>Марки электродов</string>
    </property>

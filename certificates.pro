@@ -15,6 +15,7 @@ SOURCES += \
     dialoglabels/dialoglabels.cpp \
     formdoc/formdoc.cpp \
     formdoc/modeldoc.cpp \
+    formmarkel/formmarkel.cpp \
     formpartel/formpartel.cpp \
     formpartwire/formpartwire.cpp \
     formpartwire/modelwirepartimech.cpp \
@@ -49,6 +50,7 @@ HEADERS += \
     dialoglabels/dialoglabels.h \
     formdoc/formdoc.h \
     formdoc/modeldoc.h \
+    formmarkel/formmarkel.h \
     formpartel/formpartel.h \
     formpartwire/formpartwire.h \
     formpartwire/modelwirepartimech.h \
@@ -80,6 +82,7 @@ FORMS += \
     dialogcopyvalel/dialogcopyvalel.ui \
     dialoglabels/dialoglabels.ui \
     formdoc/formdoc.ui \
+    formmarkel/formmarkel.ui \
     formpartel/formpartel.ui \
     formpartwire/formpartwire.ui \
     formship/formship.ui \

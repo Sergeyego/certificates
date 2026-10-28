@@ -12,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
     actAction(ui->actionPartWire,&MainWindow::newFormPartWire,1);
     actAction(ui->actionShipCert,&MainWindow::newFormShip,1);
     actAction(ui->actionDoc,&MainWindow::newFormDoc,1);
+    actAction(ui->actionMarkEl,&MainWindow::newFormMarkEl,1);
 
     tabManager->loadSettings();
     loadSettings();
@@ -133,5 +134,12 @@ void MainWindow::newFormPartWire()
         FormPartWire *formPartWire = new FormPartWire();
         connect(this,SIGNAL(findPart(int,QString)),formPartWire,SLOT(findPart(int,QString)));
         tabManager->addSubWindow(formPartWire,sender());
+    }
+}
+
+void MainWindow::newFormMarkEl()
+{
+    if (!tabManager->exist(sender())){
+        tabManager->addSubWindow(new FormMarkEl(),sender());
     }
 }
