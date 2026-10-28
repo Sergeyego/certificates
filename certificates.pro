@@ -22,6 +22,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     pasportmanager.cpp \
+    progressreportdialog/progressreportdialog.cpp \
     rest/relmodels.cpp \
     rest/restcombobox.cpp \
     rest/restconnection.cpp \
@@ -54,6 +55,7 @@ HEADERS += \
     formship/formship.h \
     mainwindow.h \
     pasportmanager.h \
+    progressreportdialog/progressreportdialog.h \
     rest/relmodels.h \
     rest/restcombobox.h \
     rest/restconnection.h \
@@ -82,6 +84,7 @@ FORMS += \
     formpartwire/formpartwire.ui \
     formship/formship.ui \
     mainwindow.ui \
+    progressreportdialog/progressreportdialog.ui \
     rest/restlogin.ui \
     rest/resttabledialog.ui
 

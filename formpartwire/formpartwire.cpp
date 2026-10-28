@@ -130,6 +130,7 @@ void FormPartWire::upd()
         RelModels::instance()->updateRels(arrMod);
         RelModels::instance()->getModel("provol")->refresh();
         RelModels::instance()->getModel("wire_diam")->refresh();
+        modelMech->refreshCats();
     }
 
     bool b = ui->checkBoxOnly->isChecked();

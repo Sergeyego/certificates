@@ -9,51 +9,27 @@ FormDoc::FormDoc(QWidget *parent) :
 
     loadsettings();
 
+    RelModels::instance()->getModel("gost_new")->setEditable(true);
+    RelModels::instance()->getModel("zvd_grade")->setEditable(true);
+
     modelEl = new RestTableModel("zvd_els",this);
     ui->tableViewEl->setModel(modelEl);
 
     modelElDim = new RestTableModel("zvd_eldim",this);
     ui->tableViewElDim->setModel(modelElDim);
 
-
-    /*modelTu = new DbTableModel("zvd_sert_tu",this);
-    modelTu->addColumn("id_sert","id_sert");
-    modelTu->addColumn("id_tu",QString::fromUtf8("ТУ, ОСТ"),Rels::instance()->relGost);
-    modelTu->setSort("gost_new.nam");
-
+    modelTu = new RestTableModel("zvd_sert_tu",this);
     ui->tableViewTu->setModel(modelTu);
-    ui->tableViewTu->setColumnHidden(0,true);
-    ui->tableViewTu->setColumnWidth(1,210);
+
 
     modelEn = new ModelEn(this);
     ui->listViewEn->setModel(modelEn);
 
-    modelWireDiam = new DbTableModel("zvd_wire_diam_sert");
-    modelWireDiam->addColumn("id","id");
-    modelWireDiam->addColumn("id_sert","id_sert");
-    modelWireDiam->addColumn("id_provol",QString::fromUtf8("Проволока"),Rels::instance()->relProvol);
-    modelWireDiam->addColumn("id_diam",QString::fromUtf8("Диам."),Rels::instance()->relWireDiam);
-    modelWireDiam->addColumn("id_grade",QString::fromUtf8("Категория"),Rels::instance()->relGrade);
-    modelWireDiam->setSuffix("inner join provol as p on p.id=zvd_wire_diam_sert.id_provol "
-                         "inner join diam as d on d.id=zvd_wire_diam_sert.id_diam");
-    modelWireDiam->setSort("p.nam, d.diam");
+    modelWireDiam = new RestTableModel("zvd_wire_diam_sert",this);
     ui->tableViewWireDiam->setModel(modelWireDiam);
-    ui->tableViewWireDiam->setColumnHidden(0,true);
-    ui->tableViewWireDiam->setColumnHidden(1,true);
-    ui->tableViewWireDiam->setColumnWidth(2,150);
-    ui->tableViewWireDiam->setColumnWidth(3,60);
-    ui->tableViewWireDiam->setColumnWidth(4,220);
 
-    modelWire = new DbTableModel("zvd_wire_sert");
-    modelWire->addColumn("id_sert","id_sert");
-    modelWire->addColumn("id_provol",QString::fromUtf8("Проволока"),Rels::instance()->relProvol);
-    modelWire->addColumn("id_grade",QString::fromUtf8("Категория"),Rels::instance()->relGrade);
-    modelWire->setSuffix("inner join provol as p on p.id=zvd_wire_sert.id_provol");
-    modelWire->setSort("p.nam");
+    modelWire = new RestTableModel("zvd_wire_sert",this);
     ui->tableViewWire->setModel(modelWire);
-    ui->tableViewWire->setColumnHidden(0,true);
-    ui->tableViewWire->setColumnWidth(1,150);
-    ui->tableViewWire->setColumnWidth(2,220);*/
 
     modelDoc = new ModelDoc(this);
     ui->tableViewDoc->setModel(modelDoc);
@@ -79,6 +55,7 @@ FormDoc::FormDoc(QWidget *parent) :
     mapper->addEmptyLock(ui->listViewEn);
     mapper->addEmptyLock(ui->toolButtonCheckAll);
     mapper->addEmptyLock(ui->toolButtonUnCheckAll);
+    mapper->addLock(ui->pushButtonSite);
     ui->horizontalLayoutMap->insertWidget(0,mapper);
 
     connect(mapper,SIGNAL(currentIndexChanged(int)),this,SLOT(refreshData(int)));
@@ -90,8 +67,8 @@ FormDoc::FormDoc(QWidget *parent) :
     connect(ui->pushButtonSaveAs,SIGNAL(clicked(bool)),this,SLOT(saveAs()));
     connect(ui->pushButtonDel,SIGNAL(clicked(bool)),this,SLOT(delSert()));
     connect(modelDoc,SIGNAL(sigList()),this,SLOT(updState()));
-    //connect(ui->toolButtonCheckAll,SIGNAL(clicked(bool)),modelEn,SLOT(checkAll()));
-    //connect(ui->toolButtonUnCheckAll,SIGNAL(clicked(bool)),modelEn,SLOT(unCheckAll()));
+    connect(ui->toolButtonCheckAll,SIGNAL(clicked(bool)),modelEn,SLOT(checkAll()));
+    connect(ui->toolButtonUnCheckAll,SIGNAL(clicked(bool)),modelEn,SLOT(unCheckAll()));
     connect(ui->pushButtonSite,SIGNAL(clicked(bool)),this,SIGNAL(reqUpdSite()));
 
     upd();
@@ -126,6 +103,17 @@ void FormDoc::setOk(bool ok)
 
 void FormDoc::refreshData(int index)
 {
+    if (index<0){
+        modelEl->clear();
+        modelElDim->clear();
+        modelWire->clear();
+        modelWireDiam->clear();
+        modelTu->clear();
+        modelEn->clear();
+        setOk(false);
+        return;
+    }
+
     int id=mapper->modelData(index,"id").toInt();
 
     modelEl->setDefaultValue("id_sert",id);
@@ -136,19 +124,19 @@ void FormDoc::refreshData(int index)
     modelElDim->setFilter(RestFilter::rule(modelElDim->tableName(),"id_sert",RestFilter::Op::Eq,id));
     modelElDim->select();
 
-    /*modelWireDiam->setDefaultValue(1,id);
-    modelWireDiam->setFilter("zvd_wire_diam_sert.id_sert = "+QString::number(id));
+    modelWireDiam->setDefaultValue("id_sert",id);
+    modelWireDiam->setFilter(RestFilter::rule(modelWireDiam->tableName(),"id_sert",RestFilter::Op::Eq,id));
     modelWireDiam->select();
 
-    modelWire->setDefaultValue(0,id);
-    modelWire->setFilter("zvd_wire_sert.id_sert = "+QString::number(id));
+    modelWire->setDefaultValue("id_sert",id);
+    modelWire->setFilter(RestFilter::rule(modelWire->tableName(),"id_sert",RestFilter::Op::Eq,id));
     modelWire->select();
 
-    modelTu->setDefaultValue(0,id);
-    modelTu->setFilter("zvd_sert_tu.id_sert = "+QString::number(id));
+    modelTu->setDefaultValue("id_sert",id);
+    modelTu->setFilter(RestFilter::rule(modelTu->tableName(),"id_sert",RestFilter::Op::Eq,id));
     modelTu->select();
 
-    modelEn->refresh(id);*/
+    modelEn->refresh(id);
 
     updState();
 }
@@ -186,6 +174,7 @@ void FormDoc::delSert()
 ModelEn::ModelEn(QWidget *parent) : RestRoTableModel(parent)
 {
     id_d=-1;
+    connect(this,SIGNAL(sigRefresh()),this,SLOT(refreshFinished()));
 }
 
 Qt::ItemFlags ModelEn::flags(const QModelIndex &index) const
@@ -195,30 +184,18 @@ Qt::ItemFlags ModelEn::flags(const QModelIndex &index) const
 
 void ModelEn::refresh(int id_doc)
 {
-    /*id_d=id_doc;
-    disList.clear();
-    QSqlQuery query;
-    query.prepare("select ev.nam, ev.id, not exists (select zsd.id_var  from zvd_sert_disable zsd where zsd.id_sert = :id_sert and zsd.id_var=ev.id) "
-                  "from elrtr_vars ev order by ev.id");
-    query.bindValue(":id_sert",id_doc);
-    if (query.exec()){
-        while (query.next()){
-            if (!query.value(2).toBool()){
-                disList.push_back(query.value(1).toInt());
-            }
-        }
-        setQuery(query);
-        setHeaderData(0,Qt::Horizontal,tr("Вариант"));
-    } else {
-        QMessageBox::critical(NULL,"Error",query.lastError().text(),QMessageBox::Cancel);
-        clear();
-    }*/
+    this->setPath("api/docs/variants/get/"+QString::number(id_doc));
+    this->select();
+    id_d=id_doc;
 }
 
 QVariant ModelEn::data(const QModelIndex &item, int role) const
 {
+    if (!item.isValid()){
+        return QVariant();
+    }
     if (role==Qt::CheckStateRole && item.column()==0){
-        return disList.contains(this->data(this->index(item.row(),1),Qt::EditRole).toInt()) ? Qt::Unchecked : Qt::Checked;
+        return disList.contains(this->getModelData(item.row(),"id").toInt()) ? Qt::Unchecked : Qt::Checked;
     }
     return RestRoTableModel::data(item,role);
 }
@@ -226,18 +203,26 @@ QVariant ModelEn::data(const QModelIndex &item, int role) const
 bool ModelEn::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     if (role==Qt::CheckStateRole && index.column()==0){
-        bool ok=false;
-        int id_var=this->data(this->index(index.row(),1),Qt::EditRole).toInt();
-        ok=writeSql(id_var,value.toBool());
+        int id_var=this->getModelData(index.row(),"id").toInt();
+        QByteArray data;
+        QJsonDocument doc;
+        QJsonObject object
+            {
+                {"id", id_var},
+                {"value", value.toBool()},
+            };
+        doc.setObject(object);
+        QByteArray body=doc.toJson();
+        bool ok = RestConnection::instance()->sendSyncRequest("api/docs/variants/patch/"+QString::number(id_d),"PATCH",body,data);
         if (ok) {
             if (value.toBool()){
                 if (disList.contains(id_var)){
-                    disList.removeAt(disList.indexOf(id_var));
+                    disList.remove(id_var);
                     emit dataChanged(index,index);
                 }
             } else {
                 if (!disList.contains(id_var)){
-                    disList.push_back(id_var);
+                    disList.insert(id_var);
                     emit dataChanged(index,index);
                 }
             }
@@ -247,51 +232,33 @@ bool ModelEn::setData(const QModelIndex &index, const QVariant &value, int role)
     return RestRoTableModel::setData(index,value,role);
 }
 
+void ModelEn::refreshFinished()
+{
+    disList.clear();
+    for (int i=0; i<rowCount();i++){
+        if (!this->getModelData(i,"stat").toBool()){
+            disList.insert(this->getModelData(i,"id").toInt());
+        }
+    }
+    if (rowCount() > 0) {
+        emit dataChanged(index(0, 0), index(rowCount() - 1, 0), {Qt::CheckStateRole});
+    }
+}
+
 void ModelEn::checkAll()
 {
-    /*QSqlQuery query;
-    query.prepare("delete from zvd_sert_disable where id_sert = :id_sert");
-    query.bindValue(":id_sert",id_d);
-    if (!query.exec()){
-        QMessageBox::critical(NULL,"Error",query.lastError().text(),QMessageBox::Cancel);
-    } else {
+    QByteArray data;
+    bool ok = RestConnection::instance()->sendSyncRequest("api/docs/variants/delete/"+QString::number(id_d),"DELETE","{}",data);
+    if (ok){
         refresh(id_d);
-    }*/
+    }
 }
 
 void ModelEn::unCheckAll()
 {
-    /*QSqlQuery query;
-    query.prepare("insert into zvd_sert_disable (id_sert, id_var) (select :id_sert, ev.id from elrtr_vars ev) ON CONFLICT DO NOTHING");
-    query.bindValue(":id_sert",id_d);
-    if (!query.exec()){
-        QMessageBox::critical(NULL,"Error",query.lastError().text(),QMessageBox::Cancel);
-    } else {
+    QByteArray data;
+    bool ok = RestConnection::instance()->sendSyncRequest("api/docs/variants/post/"+QString::number(id_d),"POST","{}",data);
+    if (ok){
         refresh(id_d);
-    }*/
-}
-
-bool ModelEn::writeSql(int id_var, bool value)
-{
-    bool ok=false;
-    /*if (value){
-        QSqlQuery query;
-        query.prepare("delete from zvd_sert_disable where id_sert = :id_sert and id_var = :id_var");
-        query.bindValue(":id_sert",id_d);
-        query.bindValue(":id_var",id_var);
-        ok=query.exec();
-        if (!ok){
-            QMessageBox::critical(NULL,"Error",query.lastError().text(),QMessageBox::Cancel);
-        }
-    } else {
-        QSqlQuery query;
-        query.prepare("insert into zvd_sert_disable (id_sert, id_var) values (:id_sert, :id_var) ON CONFLICT DO NOTHING");
-        query.bindValue(":id_sert",id_d);
-        query.bindValue(":id_var",id_var);
-        ok=query.exec();
-        if (!ok){
-            QMessageBox::critical(NULL,"Error",query.lastError().text(),QMessageBox::Cancel);
-        }
-    }*/
-    return ok;
+    }
 }

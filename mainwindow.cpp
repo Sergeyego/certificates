@@ -66,14 +66,17 @@ void MainWindow::clearEmptyMenus()
 
 void MainWindow::updSite()
 {
+    ProgressReportDialog *prd = new ProgressReportDialog(this);
+    prd->setText(tr("Обновление данных на сайте"));
     QNetworkReply *reply = RestConnection::instance()->sendGet(RestConnection::instance()->buildUrl("api/site/sync"));
+    connect(reply,SIGNAL(finished()),prd,SLOT(hide()));
+    connect(reply,SIGNAL(finished()),prd,SLOT(deleteLater()));
     connect(reply,SIGNAL(finished()),this,SLOT(updSiteFinished()));
-    //prd->show();
+    prd->show();
 }
 
 void MainWindow::updSiteFinished()
 {
-    //prd->hide();
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     if (reply){
         QByteArray data=reply->readAll();

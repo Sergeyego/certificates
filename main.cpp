@@ -5,11 +5,13 @@
 #include <QDir>
 #include <QFileInfoList>
 #include <QFontDatabase>
+#include <QStyleFactory>
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     a.setWindowIcon(QIcon(":/images/ico.ico"));
+    QApplication::setStyle(QStyleFactory::create("Fusion"));
     RestLogin d(QObject::tr("Результаты испытаний и сертификаты качества"));
     d.setHost("https://192.168.1.134");
     if (d.exec()!=QDialog::Accepted) {

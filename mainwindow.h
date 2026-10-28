@@ -8,6 +8,7 @@
 #include "formpartwire/formpartwire.h"
 #include "formship/formship.h"
 #include "formdoc/formdoc.h"
+#include "progressreportdialog/progressreportdialog.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {

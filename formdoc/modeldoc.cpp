@@ -77,6 +77,7 @@ void ModelDoc::saveAs(int ind)
 
 void ModelDoc::upload(int ind)
 {
+    if (ind < 0) return;
     QSettings settings("szsm", QApplication::applicationName());
     QDir dir(settings.value("savePath",QDir::homePath()).toString());
     QString filename=QFileDialog::getOpenFileName(QApplication::activeWindow(), tr("Открыть файл"),dir.path(),tr("pdf (*.pdf)"));
@@ -107,6 +108,7 @@ void ModelDoc::upload(int ind)
 
 void ModelDoc::clearFile(int ind)
 {
+    if (ind < 0) return;
     QString nom = this->getModelData(ind,"nom_doc").toString();
     int n=QMessageBox::question(QApplication::activeWindow(),tr("Подтвердите удаление"),tr("Подтветждаете удаление ")+nom+"?",QMessageBox::Yes| QMessageBox::No);
     if (n==QMessageBox::Yes) {
