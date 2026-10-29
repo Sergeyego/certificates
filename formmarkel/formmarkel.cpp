@@ -9,81 +9,49 @@ FormMarkEl::FormMarkEl(QWidget *parent) :
     loadsettings();
 
     ui->lineEditPr->setInputMask(QString("099±90°C 009 xxxxx"));
-    /*ui->dateEdit->setDate(QDate::currentDate());
+    ui->dateEdit->setDate(QDate::currentDate());
 
-    ui->comboBoxVarGost->setModel(Rels::instance()->relGostType->model());
+    ui->comboBoxVarGost->setModel(RelModels::instance()->getModel("el_gost_types"));
 
     colVal defDim;
     defDim.val=4;
-    if (!Rels::instance()->relDiam->model()->isInital()){
-        Rels::instance()->relDiam->refreshModel();
-    }
-    ui->comboBoxDiam->setModel(Rels::instance()->relDiam->model());
+
+    ui->comboBoxDiam->setModel(RelModels::instance()->getModel("el_diam"));
     ui->comboBoxDiam->setCurrentData(defDim);
     ui->comboBoxDiam->setEditable(false);
 
-    modelProvol = new DbTableModel("el_provol",this);
-    modelProvol->addColumn("id_el","id_el");
-    modelProvol->addColumn("id_prov",tr("Проволока"),Rels::instance()->relProvol);
+    modelVarList = new RestRoTableModel(this);
+    connect(modelVarList,SIGNAL(sigRefresh()),this,SLOT(updVarsList()));
 
+    modelVar = new RestRoTableModel(this);
+    connect(modelVar,SIGNAL(sigRefresh()),this,SLOT(loadVarsFinished()));
+
+    modelProvol = new RestTableModel("el_provol",this);
     ui->tableViewProvol->setModel(modelProvol);
-    ui->tableViewProvol->setColumnHidden(0,true);
-    ui->tableViewProvol->setColumnWidth(1,200);
 
     colVal defVar;
     defVar.val=1;
-    if (!Rels::instance()->relVar->isInital()){
-        Rels::instance()->relVar->refreshModel();
-    }
-    ui->comboBoxVar->setModel(Rels::instance()->relVar->model());
+    ui->comboBoxVar->setModel(RelModels::instance()->getModel("vars"));
     ui->comboBoxVar->setCurrentData(defVar);
     ui->comboBoxVar->setEditable(false);
 
-    modelEan = new DbTableModel("ean_el",this);
-    modelEan->addColumn("id_el","id_el");
-    modelEan->addColumn("id_diam",tr("Диам."),Rels::instance()->relDiam);
-    modelEan->addColumn("id_pack",tr("Упаковка (ед., групп.)"),Rels::instance()->relPack);
-    modelEan->addColumn("ean_ed",tr("Штрих код (ед.)"),Rels::instance()->relEanEd);
-    modelEan->addColumn("ean_group",tr("Штрих код (гр.)"),Rels::instance()->relEanGr);
-    modelEan->setSort("diam.sdim");
+    modelEan = new RestTableModel("ean_el",this);
     ui->tableViewPack->setModel(modelEan);
-    ui->tableViewPack->setColumnHidden(0,true);
-    ui->tableViewPack->setColumnWidth(1,60);
-    ui->tableViewPack->setColumnWidth(2,190);
-    ui->tableViewPack->setColumnWidth(3,125);
-    ui->tableViewPack->setColumnWidth(4,125);
+    connect(modelEan,SIGNAL(sigUpd()),RelModels::instance()->getModel("ean_ed"),SLOT(refresh()));
+    connect(modelEan,SIGNAL(sigUpd()),RelModels::instance()->getModel("ean_gr"),SLOT(refresh()));
 
-    DbDelegate *delegate=qobject_cast<DbDelegate *>(ui->tableViewPack->itemDelegate());
-    if (delegate){
-        connect(delegate,SIGNAL(createEdt(QModelIndex)),this,SLOT(updEanRel(QModelIndex)));
-    }
+    modelPlav = new RestTableModel("el_plav",this);
+    ui->tableViewPlav->setModel(modelPlav);
 
-    modelGost = new DbTableModel("gost_el",this);
-    modelGost->addColumn("id_el",tr("Марка"));
-    modelGost->addColumn("id_var",tr("Вариант"));
-    modelGost->addColumn("dat",tr("Дата нач."));
-    modelGost->addColumn("id_gost",tr("Документ"),Rels::instance()->relGost);
-    modelGost->addColumn("dat_end",tr("Дата кон."));
-    modelGost->setSort("gost_el.dat, gost_new.nam");
-    modelGost->setDefaultValue(4,QVariant());
+    modelGost = new RestTableModel("gost_el",this);
+    modelGost->setDefaultValue("dat",QDate::currentDate());
     ui->tableViewGost->setModel(modelGost);
-    ui->tableViewGost->setColumnHidden(0,true);
-    ui->tableViewGost->setColumnHidden(1,true);
-    ui->tableViewGost->setColumnWidth(2,80);
-    ui->tableViewGost->setColumnWidth(3,200);
-    ui->tableViewGost->setColumnWidth(4,80);
 
-    modelAmp = new DbTableModel("amp",this);
-    modelAmp->addColumn("id","id");
-    modelAmp->addColumn("id_el","id_el");
-    modelAmp->addColumn("id_var","id_var");
-    modelAmp->addColumn("id_diam",QString::fromUtf8("Ф, мм"),Rels::instance()->relDiam);
-    modelAmp->addColumn("bot",QString::fromUtf8("Нижнее"));
-    modelAmp->addColumn("vert",QString::fromUtf8("Вертикаль."));
-    modelAmp->addColumn("ceil",QString::fromUtf8("Потолоч."));
-    modelAmp->setSort("diam.sdim");
 
-    modelAmpTu = new DbTableModel("amp_tu",this);
+    modelAmp = new RestTableModel("el_amp",this);
+    ui->tableViewAmp->setModel(modelAmp);
+
+    /*modelAmpTu = new DbTableModel("amp_tu",this);
     modelAmpTu->addColumn("id","id");
     modelAmpTu->addColumn("id_el","id_el");
     modelAmpTu->addColumn("id_var","id_var");
@@ -94,15 +62,6 @@ FormMarkEl::FormMarkEl(QWidget *parent) :
     modelAmpTu->addColumn("vert",QString::fromUtf8("Вертик."));
     modelAmpTu->addColumn("ceil",QString::fromUtf8("Потолоч."));
     modelAmpTu->setSort("diam.sdim, amp_tu.id");
-
-    ui->tableViewAmp->setModel(modelAmp);
-    ui->tableViewAmp->setColumnHidden(0,true);
-    ui->tableViewAmp->setColumnHidden(1,true);
-    ui->tableViewAmp->setColumnHidden(2,true);
-    ui->tableViewAmp->setColumnWidth(3,70);
-    ui->tableViewAmp->setColumnWidth(4,90);
-    ui->tableViewAmp->setColumnWidth(5,90);
-    ui->tableViewAmp->setColumnWidth(6,90);
 
     ui->tableViewAmpTu->setModel(modelAmpTu);
     ui->tableViewAmpTu->setColumnHidden(0,true);
@@ -149,17 +108,6 @@ FormMarkEl::FormMarkEl(QWidget *parent) :
     ui->tableViewMech->setColumnWidth(3,90);
     ui->tableViewMech->setColumnWidth(4,90);
 
-    modelPlav = new DbTableModel("el_plav",this);
-    modelPlav->addColumn("id_el","id_el");
-    modelPlav->addColumn("id_plav",QString::fromUtf8("Параметр"),Rels::instance()->relPlav);
-    modelPlav->addColumn("value",QString::fromUtf8("Значение"));
-    modelPlav->setDecimals(2,2);
-
-    ui->tableViewPlav->setModel(modelPlav);
-    ui->tableViewPlav->setColumnHidden(0,true);
-    ui->tableViewPlav->setColumnWidth(1,250);
-    ui->tableViewPlav->setColumnWidth(2,80);
-
     modelIntClass = new DbTableModel("el_int_class",this);
     modelIntClass->addColumn("id_el","id_el");
     modelIntClass->addColumn("id_var","id_var");
@@ -173,33 +121,9 @@ FormMarkEl::FormMarkEl(QWidget *parent) :
 
     modelMark = new RestTableModel("elrtr",this);
     modelMark->setFilter(RestFilter::rule(modelMark->tableName(),"id",RestFilter::Op::Ne,0));
-    /*modelMark->addColumn("id","id");
-    modelMark->addColumn("marka",QString::fromUtf8("Марка"));
-    modelMark->addColumn("marka_sert",QString::fromUtf8("Название для сертификата"));
-    modelMark->addColumn("id_grp",QString::fromUtf8("Группа"),Rels::instance()->relGrp);
-    modelMark->addColumn("id_vid",QString::fromUtf8("Вид"),Rels::instance()->relVid);
-    modelMark->addColumn("id_gost",QString::fromUtf8("Проволока"),Rels::instance()->relProvol);
-    modelMark->addColumn("id_pic",QString::fromUtf8("Положение при сварке"),Rels::instance()->relPol);
-    modelMark->addColumn("id_gost_type",QString::fromUtf8("Тип по ГОСТ"),Rels::instance()->relGostType);
-    modelMark->addColumn("id_iso_type",QString::fromUtf8("Тип по ISO"),Rels::instance()->relIso);
-    modelMark->addColumn("id_aws_type",QString::fromUtf8("Тип по AWS"),Rels::instance()->relAws);
-    modelMark->addColumn("id_denominator",QString::fromUtf8("Знаменатель"),Rels::instance()->relZnam);
-    modelMark->addColumn("id_purpose",QString::fromUtf8("Буквенное обозначение"),Rels::instance()->relBukv);
-    modelMark->addColumn("descr",QString::fromUtf8("Описание"));
-    modelMark->addColumn("vl",QString::fromUtf8("Допустимое содержание влаги"));
-    modelMark->addColumn("pr2",QString::fromUtf8("Режим повторной прокалки"));
-    modelMark->addColumn("id_u",QString::fromUtf8("Индекс сортировки"));
-    modelMark->addColumn("katalog",QString::fromUtf8("Каталог"));
-    modelMark->addColumn("descr_spec",QString::fromUtf8("Особые свойства"));
-    modelMark->addColumn("descr_feature",QString::fromUtf8("Особенности сварки"));
-    modelMark->setSort("elrtr.marka");
-    modelMark->setFilter("elrtr.id<>0");
-    modelMark->select();*/
     ui->tableViewMark->setModel(modelMark);
 
-
     mapper = new RestMapper(ui->tableViewMark,this);
-
     mapper->setItemDelegate(new CustomDelegate(this));
 
     ui->horizontalLayoutMap->insertWidget(0,mapper);
@@ -218,7 +142,7 @@ FormMarkEl::FormMarkEl(QWidget *parent) :
     mapper->addMapping(ui->plainTextEditDescrCat,"descr");
     mapper->addMapping(ui->lineEditVl,"vl");
     mapper->addMapping(ui->lineEditPr,"pr2");
-    mapper->addMapping(ui->lineEditInd,"id_u");
+    mapper->addMapping(ui->lineEditSL,"shelf_life");
     mapper->addMapping(ui->checkBoxKat,"katalog");
     mapper->addMapping(ui->plainTextEditDescrSpec,"descr_spec");
     mapper->addMapping(ui->plainTextEditDescrFeature,"descr_feature");
@@ -234,10 +158,10 @@ FormMarkEl::FormMarkEl(QWidget *parent) :
     mapper->addEmptyLock(ui->tableViewPack);
     mapper->addEmptyLock(ui->tableViewGost);
 
-    /*connect(mapper,SIGNAL(currentIndexChanged(int)),this,SLOT(refreshCont(int)));
-    connect(modelMark,SIGNAL(sigUpd()),Rels::instance()->relElMark,SLOT(refreshModel()));
-    connect(ui->cmdLbl,SIGNAL(clicked(bool)),this,SLOT(gelLbl()));
-    connect(ui->cmdExt,SIGNAL(clicked(bool)),this,SIGNAL(reqUpdSite()));
+    connect(mapper,SIGNAL(currentIndexChanged(int)),this,SLOT(refreshCont(int)));
+    connect(modelMark,SIGNAL(sigUpd()),RelModels::instance()->getModel("mark"),SLOT(refresh()));
+    connect(ui->pushButtonLbl,SIGNAL(clicked(bool)),this,SLOT(gelLbl()));
+    connect(ui->pushButtonSite,SIGNAL(clicked(bool)),this,SIGNAL(reqUpdSite()));
     connect(ui->pushButtonCreVar,SIGNAL(clicked(bool)),this,SLOT(createVar()));
     connect(ui->pushButtonDelVar,SIGNAL(clicked(bool)),this,SLOT(deleteVar()));
     connect(ui->comboBoxVar,SIGNAL(currentIndexChanged(int)),this,SLOT(loadVars()));
@@ -249,7 +173,7 @@ FormMarkEl::FormMarkEl(QWidget *parent) :
     connect(ui->pushButtonSaveVar,SIGNAL(clicked(bool)),this,SLOT(saveVar()));
     connect(ui->pushButtonCopy,SIGNAL(clicked(bool)),this,SLOT(copyTableData()));
     connect(ui->pushButtonUpd,SIGNAL(clicked(bool)),this,SLOT(upd()));
-    connect(ui->toolButtonEdtVar,SIGNAL(clicked(bool)),this,SLOT(edtVar()));*/
+    connect(ui->toolButtonEdtVar,SIGNAL(clicked(bool)),this,SLOT(edtVar()));
 
     this->upd();
 }
@@ -272,66 +196,43 @@ void FormMarkEl::savesettings()
     settings.setValue("mark_splitter", ui->splitter->saveState());
 }
 
-int FormMarkEl::id_el()
+void FormMarkEl::setCurrentPix(const QPixmap &pix)
 {
-    QModelIndex ind=ui->tableViewMark->model()->index(mapper->currentIndex(),0);
-    return ui->tableViewMark->model()->data(ind,Qt::EditRole).toInt();
+    ui->labelPix->setPixmap(pix.scaled(ui->labelPix->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
 }
 
-int FormMarkEl::id_diam()
+void FormMarkEl::configureVarRels(RestTableModel *model, int id_el, int id_var)
 {
-    return ui->comboBoxDiam->getCurrentData().val.toInt();
+    model->setDefaultValue("id_el",id_el);
+    model->setDefaultValue("id_var",id_var);
+    RestFilter filter = RestFilter(RestFilter::Group::And);
+    filter.addRule(model->tableName(),"id_el",RestFilter::Op::Eq,id_el);
+    filter.addRule(model->tableName(),"id_var",RestFilter::Op::Eq,id_var);
+    model->setFilter(filter);
+    model->select();
 }
 
-int FormMarkEl::id_var()
+void FormMarkEl::upd()
 {
-    return ui->comboBoxVar->getCurrentData().val.toInt();
+    if (sender()==ui->pushButtonUpd){
+        mapPix.clear();
+    }
+    modelMark->select();
 }
 
-void FormMarkEl::updEanRel(QModelIndex index)
-{
-    /*if (index.column()==3){
-        Rels::instance()->relEanEd->refreshModel();
-    } else if (index.column()==4){
-        Rels::instance()->relEanGr->refreshModel();
-    }*/
-}
 
 void FormMarkEl::loadVars()
 {
-    /*if (sender()==ui->comboBoxVar && ui->comboBoxVar->currentIndex()<0){
-        return;
-    }
-    int id_e=id_el();
-    int id_v=id_var();
-    bool ok=false;
-    QSqlQuery query;
-    query.prepare("select znam, descr, proc, descrtu, id_gost_type from el_var where id_el = :id_el and id_var=:id_var");
-    query.bindValue(":id_el",id_e);
-    query.bindValue(":id_var",id_v);
-    if (query.exec()){
-        if (query.size()>0){
-            query.next();
-            ok=true;
-            ui->lineEditVarZnam->setText(query.value(0).toString());
-            ui->plainTextEditDescr->setPlainText(query.value(1).toString());
-            ui->lineEditProcVar->setText(query.value(2).toString());
-            ui->plainTextEditDescrTu->setPlainText(query.value(3).toString());
-            colVal g;
-            g.val=query.value(4).toInt();
-            ui->comboBoxVarGost->setCurrentData(g);
-        }
-    } else {
-        QMessageBox::critical(this,tr("Ошибка"),query.lastError().text(),QMessageBox::Cancel);
-    }
-    ui->pushButtonSaveVar->setEnabled(false);
+    int id_el=mapper->modelData(mapper->currentIndex(),"id").toInt();
+    int id_var=ui->comboBoxVar->getCurrentData().val.toInt();
 
-    modelAmp->setDefaultValue(1,id_e);
-    modelAmp->setDefaultValue(2,id_v);
-    modelAmp->setFilter("amp.id_el = "+QString::number(id_e)+" and amp.id_var = "+QString::number(id_v));
-    modelAmp->select();
+    modelVar->setPath("api/elrtr/variants/get/"+QString::number(id_el)+"/"+QString::number(id_var));
+    modelVar->select();
 
-    modelAmpTu->setDefaultValue(1,id_e);
+    configureVarRels(modelGost,id_el,id_var);
+    configureVarRels(modelAmp,id_el,id_var);
+
+    /*modelAmpTu->setDefaultValue(1,id_e);
     modelAmpTu->setDefaultValue(2,id_v);
     modelAmpTu->setFilter("amp_tu.id_el = "+QString::number(id_e)+" and amp_tu.id_var = "+QString::number(id_v));
     modelAmpTu->select();
@@ -346,72 +247,105 @@ void FormMarkEl::loadVars()
     modelMechTu->setFilter("mech_tu.id_el = "+QString::number(id_e)+" and mech_tu.id_var = "+QString::number(id_v));
     modelMechTu->select();
 
-    modelGost->setDefaultValue(0,id_e);
-    modelGost->setDefaultValue(1,id_v);
-    modelGost->setFilter("gost_el.id_el = "+QString::number(id_e)+" and gost_el.id_var = "+QString::number(id_v));
-    modelGost->select();
-
     modelIntClass->setDefaultValue(0,id_e);
     modelIntClass->setDefaultValue(1,id_v);
     modelIntClass->setFilter("el_int_class.id_el = "+QString::number(id_e)+" and el_int_class.id_var = "+QString::number(id_v));
-    modelIntClass->select();
+    modelIntClass->select();*/
 
-    blockVar(!ok);*/
+}
+
+void FormMarkEl::loadVarsFinished()
+{
+    bool ok = modelVar->rowCount();
+    blockVar(!ok);
+    if (ok){
+        ui->lineEditVarZnam->setText(modelVar->getModelData(0,"znam").toString());
+        ui->plainTextEditDescr->setPlainText(modelVar->getModelData(0,"descr").toString());
+        ui->lineEditProcVar->setText(modelVar->getModelData(0,"proc").toString());
+        ui->plainTextEditDescrTu->setPlainText(modelVar->getModelData(0,"descrtu").toString());
+        colVal g;
+        g.val=modelVar->getModelData(0,"id_gost_type");
+        ui->comboBoxVarGost->setCurrentData(g);
+    }
+    ui->pushButtonSaveVar->setEnabled(false);
 }
 
 void FormMarkEl::refreshCont(int index)
 {
-    /*QModelIndex ind=ui->tableViewMark->model()->index(index,0);
-    int id_el=ui->tableViewMark->model()->data(ind,Qt::EditRole).toInt();
+    int id_el=mapper->modelData(index,"id").toInt();
 
-    modelEan->setDefaultValue(0,id_el);
-    modelEan->setFilter("ean_el.id_el = "+QString::number(id_el));
+    modelEan->setDefaultValue("id_el",id_el);
+    modelEan->setFilter(RestFilter::rule(modelEan->tableName(),"id_el",RestFilter::Op::Eq,id_el));
     modelEan->select();
 
-    modelPlav->setDefaultValue(0,id_el);
-    modelPlav->setFilter("el_plav.id_el = "+QString::number(id_el));
+    modelPlav->setDefaultValue("id_el",id_el);
+    modelPlav->setFilter(RestFilter::rule(modelPlav->tableName(),"id_el",RestFilter::Op::Eq,id_el));
     modelPlav->select();
 
-    modelProvol->setDefaultValue(0,id_el);
-    modelProvol->setFilter("el_provol.id_el = "+QString::number(id_el));
+    modelProvol->setDefaultValue("id_el",id_el);
+    modelProvol->setFilter(RestFilter::rule(modelProvol->tableName(),"id_el",RestFilter::Op::Eq,id_el));
     modelProvol->select();
 
-    updImg();
-    updVarsList();
-    loadVars();*/
+    int id_pix=mapper->modelData(index,"id_pos").toInt();
+    QPixmap pix=mapPix.value(id_pix);
+    if (!pix.isNull()){
+        setCurrentPix(pix);
+    } else {
+        QNetworkReply *reply = RestConnection::instance()->sendGet(RestConnection::instance()->buildUrl("api/pos-"+QString::number(id_pix)+".png"));
+        reply->setProperty("id_pix",id_pix);
+        connect(reply,SIGNAL(finished()),this,SLOT(updImgFinished()));
+    }
+
+    modelVarList->setPath("api/elrtr/variants/list/"+QString::number(id_el));
+    modelVarList->select();
+
+    loadVars();
 }
 
-void FormMarkEl::updImg()
+void FormMarkEl::updImgFinished()
 {
-    /*QModelIndex ind=ui->tableViewMark->model()->index(mapper->currentIndex(),6);
-    int id_pix=ui->tableViewMark->model()->data(ind,Qt::EditRole).toInt();
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    if (!reply) return;
+
+    const auto err = reply->error();
+    const QString errStr = reply->errorString();
+    reply->deleteLater();
+
+    if (err == QNetworkReply::OperationCanceledError) return;
+
+    const QByteArray data = reply->readAll();
+    if (err != QNetworkReply::NoError) {
+        RestError::critical(tr("Ошибка"), errStr + "\n" + data);
+        return;
+    }
+
     QPixmap pix;
-    pix.loadFromData(Rels::instance()->mapPolPix.value(id_pix));
-    if (pix.isNull()){
-        ui->labelPix->setPixmap(pix);
-    } else {
-        ui->labelPix->setPixmap(pix.scaled(ui->labelPix->size(),Qt::KeepAspectRatio));
-    }*/
+    pix.loadFromData(data);
+    if (!pix.isNull()){
+        int id_pix = reply->property("id_pix").toInt();
+        mapPix.insert(id_pix,pix);
+        int index = mapper->currentIndex();
+        if (index>=0){
+            int current_id_pix = mapper->modelData(index,"id_pos").toInt();
+            if (id_pix==current_id_pix){
+                setCurrentPix(pix);
+            } else {
+                pix=mapPix.value(current_id_pix);
+                if (!pix.isNull()){
+                    setCurrentPix(pix);
+                }
+            }
+        }
+    }
 }
 
 void FormMarkEl::updVarsList()
 {
-    /*QString str = tr("Варианты:");
-    QModelIndex ind=ui->tableViewMark->model()->index(mapper->currentIndex(),0);
-    int id_el=ui->tableViewMark->model()->data(ind,Qt::EditRole).toInt();
-    QSqlQuery query;
-    query.prepare("select ev2.nam  from el_var ev "
-                  "inner join elrtr_vars ev2 on ev2.id = ev.id_var "
-                  "where id_el = :id_el order by ev.id_var");
-    query.bindValue(":id_el",id_el);
-    if (query.exec()){
-        while (query.next()){
-            str+=" "+query.value(0).toString()+";";
-        }
-    } else {
-        QMessageBox::critical(this,tr("Ошибка"),query.lastError().text(),QMessageBox::Cancel);
+    QString str = tr("Варианты:");
+    for (int i=0; i<modelVarList->rowCount(); i++){
+        str+= " " + modelVarList->getModelData(i,"nam").toString() + ";";
     }
-    ui->groupBoxVar->setTitle(str);*/
+    ui->groupBoxVar->setTitle(str);
 }
 
 void FormMarkEl::gelLbl()
@@ -423,7 +357,7 @@ void FormMarkEl::blockVar(bool b)
 {
     ui->pushButtonCreVar->setEnabled(b);
     ui->pushButtonDelVar->setEnabled(!b);
-    ui->pushButtonCopy->setEnabled(!b && (modelAmp->isEmpty() || modelChemTu->isEmpty() || modelMechTu->isEmpty()|| modelGost->isEmpty()) && id_var()!=1);
+    ui->pushButtonCopy->setEnabled(!b);
 
     ui->lineEditVarZnam->setEnabled(!b);
     ui->plainTextEditDescr->setEnabled(!b);
@@ -433,6 +367,9 @@ void FormMarkEl::blockVar(bool b)
         ui->plainTextEditDescr->clear();
         ui->lineEditProcVar->clear();
         ui->plainTextEditDescrTu->clear();
+        colVal g;
+        g.val=-1;
+        ui->comboBoxVarGost->setCurrentData(g);
     }
 }
 
@@ -561,19 +498,6 @@ void FormMarkEl::copyTableData()
     loadVars();*/
 }
 
-void FormMarkEl::upd()
-{
-    modelMark->select();
-    /*Rels::instance()->refreshPolPix();
-    modelMark->refreshRelsModel();
-    Rels::instance()->relPlav->refreshModel();
-    modelEan->refreshRelsModel();
-    modelChemTu->refreshRelsModel();
-    modelMechTu->refreshRelsModel();
-    Rels::instance()->relVar->refreshModel();
-    Rels::instance()->relPol->refreshModel();*/
-}
-
 void FormMarkEl::edtVar()
 {
     /*DbRelationEditDialog d(Rels::instance()->relVar);
@@ -590,7 +514,11 @@ CustomDelegate::CustomDelegate(QObject *parent) : RestItemDelegate(parent)
 
 void CustomDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
-    if (index.column()==14){
+    const auto *restTableModel = qobject_cast<const RestTableModel *>(index.model());
+    if (!restTableModel) {
+        return RestItemDelegate::setEditorData(editor, index);
+    }
+    if (index.column()==restTableModel->columnIndex("pr2")){
         QLineEdit *line = qobject_cast<QLineEdit *>(editor);
         if (line){
             QString pr=index.model()->data(index,Qt::EditRole).toString();
@@ -603,13 +531,17 @@ void CustomDelegate::setEditorData(QWidget *editor, const QModelIndex &index) co
         }
 
     } else {
-        RestItemDelegate::setEditorData(editor,index);
+        return RestItemDelegate::setEditorData(editor,index);
     }
 }
 
 void CustomDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
 {
-    if (index.column()==14){
+    auto *restTableModel = qobject_cast<RestTableModel *>(model);
+    if (!restTableModel) {
+        return RestItemDelegate::setModelData(editor, model, index);
+    }
+    if (index.column()==restTableModel->columnIndex("pr2")){
         QLineEdit *line = qobject_cast<QLineEdit *>(editor);
         if (line){
             QString text=line->text();
@@ -628,6 +560,6 @@ void CustomDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, co
             model->setData(index,s);
         }
     } else {
-        RestItemDelegate::setModelData(editor,model,index);
+        return RestItemDelegate::setModelData(editor,model,index);
     }
 }

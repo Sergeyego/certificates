@@ -137,12 +137,12 @@
           <widget class="QLineEdit" name="lineEditMarkSert"/>
          </item>
          <item row="4" column="5">
-          <widget class="QLineEdit" name="lineEditInd"/>
+          <widget class="QLineEdit" name="lineEditSL"/>
          </item>
          <item row="4" column="4">
           <widget class="QLabel" name="label_12">
            <property name="text">
-            <string>Индекс сортировки</string>
+            <string>Срок годн., мес</string>
            </property>
           </widget>
          </item>
@@ -339,9 +339,6 @@
                <height>0</height>
               </size>
              </property>
-             <property name="editTriggers">
-              <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
-             </property>
             </widget>
            </item>
           </layout>
@@ -370,7 +367,14 @@
             </widget>
            </item>
            <item>
-            <widget class="RestTableView" name="tableViewProvol"/>
+            <widget class="RestTableView" name="tableViewProvol">
+             <property name="maximumSize">
+              <size>
+               <width>250</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
@@ -843,7 +847,7 @@
   <tabstop>comboBoxPol</tabstop>
   <tabstop>lineEditVl</tabstop>
   <tabstop>lineEditPr</tabstop>
-  <tabstop>lineEditInd</tabstop>
+  <tabstop>lineEditSL</tabstop>
   <tabstop>tableViewChem</tabstop>
   <tabstop>tableViewMech</tabstop>
  </tabstops>

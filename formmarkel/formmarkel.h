@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "rest/resttablemodel.h"
+#include "rest/restrotablemodel.h"
 #include "rest/restmapper.h"
 #include "rest/resttabledialog.h"
 #include "rest/restitemdelegate.h"
@@ -32,21 +33,23 @@ private:
     RestTableModel *modelProvol;
     RestTableModel *modelGost;
     RestTableModel *modelIntClass;
+    QMap <int, QPixmap> mapPix;
+    RestRoTableModel *modelVarList;
+    RestRoTableModel *modelVar;
 
     void loadsettings();
     void savesettings();
-    int id_el();
-    int id_diam();
-    int id_var();
+    void setCurrentPix(const QPixmap &pix);
+    void configureVarRels(RestTableModel *model, int id_el, int id_var);
 
 private slots:
-    void updEanRel(QModelIndex index);
     void refreshCont(int index);
-    void updImg();
+    void updImgFinished();
     void updVarsList();
     void gelLbl();
     void blockVar(bool b);
     void loadVars();
+    void loadVarsFinished();
     void createVar();
     void saveVar();
     void deleteVar();
