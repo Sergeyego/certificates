@@ -140,6 +140,8 @@ void MainWindow::newFormPartWire()
 void MainWindow::newFormMarkEl()
 {
     if (!tabManager->exist(sender())){
-        tabManager->addSubWindow(new FormMarkEl(),sender());
+        FormMarkEl *formMarkEl = new FormMarkEl();
+        connect(formMarkEl,SIGNAL(reqUpdSite()),this,SLOT(updSite()));
+        tabManager->addSubWindow(formMarkEl,sender());
     }
 }

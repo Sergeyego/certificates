@@ -36,6 +36,8 @@ private:
     QMap <int, QPixmap> mapPix;
     RestRoTableModel *modelVarList;
     RestRoTableModel *modelVar;
+    int id_el_src;
+    int id_var_src;
 
     void loadsettings();
     void savesettings();
@@ -46,7 +48,7 @@ private slots:
     void refreshCont(int index);
     void updImgFinished();
     void updVarsList();
-    void gelLbl();
+    void genLbl();
     void blockVar(bool b);
     void loadVars();
     void loadVarsFinished();
@@ -55,6 +57,7 @@ private slots:
     void deleteVar();
     void varChanged();
     void copyTableData();
+    void pasteTableData();
     void upd();
     void edtVar();
 

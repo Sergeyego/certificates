@@ -89,10 +89,16 @@
    <property name="text">
     <string>Свидетельства и документы</string>
    </property>
+   <property name="shortcut">
+    <string>F3</string>
+   </property>
   </action>
   <action name="actionMarkEl">
    <property name="text">
     <string>Марки электродов</string>
+   </property>
+   <property name="shortcut">
+    <string>F4</string>
    </property>
   </action>
   <action name="action_6">

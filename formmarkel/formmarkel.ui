@@ -339,6 +339,9 @@
                <height>0</height>
               </size>
              </property>
+             <property name="editTriggers">
+              <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+             </property>
             </widget>
            </item>
           </layout>
@@ -449,7 +452,14 @@
             <item>
              <widget class="QPushButton" name="pushButtonCopy">
               <property name="text">
-               <string>Заполнить</string>
+               <string>Копировать</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButtonPaste">
+              <property name="text">
+               <string>Вставить</string>
               </property>
              </widget>
             </item>
