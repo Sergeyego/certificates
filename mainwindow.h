@@ -9,6 +9,7 @@
 #include "formship/formship.h"
 #include "formdoc/formdoc.h"
 #include "formmarkel/formmarkel.h"
+#include "formved/formved.h"
 #include "progressreportdialog/progressreportdialog.h"
 
 QT_BEGIN_NAMESPACE
@@ -42,6 +43,7 @@ private slots:
     void newFormShip();
     void newFormDoc();
     void newFormMarkEl();
+    void newFormVed();
 
 signals:
     void findPart(int id_part, QString prefix);

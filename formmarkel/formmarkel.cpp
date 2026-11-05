@@ -9,7 +9,6 @@ FormMarkEl::FormMarkEl(QWidget *parent) :
     loadsettings();
 
     ui->lineEditPr->setInputMask(QString("099±90°C 009 xxxxx"));
-    ui->dateEdit->setDate(QDate::currentDate());
 
     id_el_src=-1;
     id_var_src=-1;
@@ -26,13 +25,6 @@ FormMarkEl::FormMarkEl(QWidget *parent) :
     RelModels::instance()->getModel("positions")->setEditable(true);
 
     ui->comboBoxVarGost->setModel(RelModels::instance()->getModel("el_gost_types"));
-
-    colVal defDim;
-    defDim.val=4;
-
-    ui->comboBoxDiam->setModel(RelModels::instance()->getModel("el_diam"));
-    ui->comboBoxDiam->setCurrentData(defDim);
-    ui->comboBoxDiam->setEditable(false);
 
     modelVarList = new RestRoTableModel(this);
     connect(modelVarList,SIGNAL(sigRefresh()),this,SLOT(updVarsList()));
@@ -111,13 +103,11 @@ FormMarkEl::FormMarkEl(QWidget *parent) :
     mapper->addEmptyLock(ui->groupBoxVar);
     mapper->addEmptyLock(ui->tableViewProvol);
     mapper->addEmptyLock(ui->pushButtonSite);
-    mapper->addEmptyLock(ui->pushButtonLbl);
     mapper->addEmptyLock(ui->tableViewPack);
     mapper->addEmptyLock(ui->tableViewGost);
 
     connect(mapper,SIGNAL(currentIndexChanged(int)),this,SLOT(refreshCont(int)));
     connect(modelMark,SIGNAL(sigUpd()),RelModels::instance()->getModel("mark"),SLOT(refresh()));
-    connect(ui->pushButtonLbl,SIGNAL(clicked(bool)),this,SLOT(genLbl()));
     connect(ui->pushButtonSite,SIGNAL(clicked(bool)),this,SIGNAL(reqUpdSite()));
     connect(ui->pushButtonCreVar,SIGNAL(clicked(bool)),this,SLOT(createVar()));
     connect(ui->pushButtonDelVar,SIGNAL(clicked(bool)),this,SLOT(deleteVar()));
@@ -315,11 +305,6 @@ void FormMarkEl::updVarsList()
         str+= " " + modelVarList->getModelData(i,"nam").toString() + ";";
     }
     ui->groupBoxVar->setTitle(str);
-}
-
-void FormMarkEl::genLbl()
-{
-
 }
 
 void FormMarkEl::blockVar(bool b)

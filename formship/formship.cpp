@@ -31,9 +31,6 @@ FormShip::FormShip(QWidget *parent) :
     //reader = new Reader(this);
     //ui->tab_2->layout()->addWidget(reader);
 
-    ui->tableViewShip->verticalHeader()->setDefaultSectionSize(ui->tableViewShip->verticalHeader()->fontMetrics().height()*1.5);
-    ui->tableViewShip->verticalHeader()->hide();
-    ui->tableViewShipData->verticalHeader()->setDefaultSectionSize(ui->tableViewShipData->verticalHeader()->fontMetrics().height()*1.5);
     modelShip = new RestRoTableModel(this);
     ui->tableViewShip->setModel(modelShip);
     modelDataShip = new RestRoTableModel(this);

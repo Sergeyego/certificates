@@ -97,6 +97,9 @@
           <property name="selectionBehavior">
            <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
           </property>
+          <attribute name="verticalHeaderVisible">
+           <bool>false</bool>
+          </attribute>
          </widget>
         </item>
        </layout>

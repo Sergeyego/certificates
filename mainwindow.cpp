@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent)
     actAction(ui->actionShipCert,&MainWindow::newFormShip,1);
     actAction(ui->actionDoc,&MainWindow::newFormDoc,1);
     actAction(ui->actionMarkEl,&MainWindow::newFormMarkEl,1);
+    actAction(ui->actionVed,&MainWindow::newFormVed,1);
 
     tabManager->loadSettings();
     loadSettings();
@@ -143,5 +144,12 @@ void MainWindow::newFormMarkEl()
         FormMarkEl *formMarkEl = new FormMarkEl();
         connect(formMarkEl,SIGNAL(reqUpdSite()),this,SLOT(updSite()));
         tabManager->addSubWindow(formMarkEl,sender());
+    }
+}
+
+void MainWindow::newFormVed()
+{
+    if (!tabManager->exist(sender())){
+        tabManager->addSubWindow(new FormVed(),sender());
     }
 }

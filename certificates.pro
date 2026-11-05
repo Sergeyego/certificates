@@ -20,6 +20,7 @@ SOURCES += \
     formpartwire/formpartwire.cpp \
     formpartwire/modelwirepartimech.cpp \
     formship/formship.cpp \
+    formved/formved.cpp \
     main.cpp \
     mainwindow.cpp \
     pasportmanager.cpp \
@@ -55,6 +56,7 @@ HEADERS += \
     formpartwire/formpartwire.h \
     formpartwire/modelwirepartimech.h \
     formship/formship.h \
+    formved/formved.h \
     mainwindow.h \
     pasportmanager.h \
     progressreportdialog/progressreportdialog.h \
@@ -86,6 +88,7 @@ FORMS += \
     formpartel/formpartel.ui \
     formpartwire/formpartwire.ui \
     formship/formship.ui \
+    formved/formved.ui \
     mainwindow.ui \
     progressreportdialog/progressreportdialog.ui \
     rest/restlogin.ui \

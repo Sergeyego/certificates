@@ -53,7 +53,7 @@
      <string>Справочники</string>
     </property>
     <addaction name="actionMarkEl"/>
-    <addaction name="action_6"/>
+    <addaction name="actionVed"/>
     <addaction name="action_7"/>
    </widget>
    <addaction name="menu"/>
@@ -101,7 +101,7 @@
     <string>F4</string>
    </property>
   </action>
-  <action name="action_6">
+  <action name="actionVed">
    <property name="text">
     <string>Ведомства и виды документов</string>
    </property>

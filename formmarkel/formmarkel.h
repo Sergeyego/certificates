@@ -48,7 +48,6 @@ private slots:
     void refreshCont(int index);
     void updImgFinished();
     void updVarsList();
-    void genLbl();
     void blockVar(bool b);
     void loadVars();
     void loadVarsFinished();
