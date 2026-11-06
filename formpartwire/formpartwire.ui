@@ -32,9 +32,6 @@
          </item>
          <item>
           <widget class="QDateEdit" name="dateEditBeg">
-           <property name="displayFormat">
-            <string>dd.MM.yy</string>
-           </property>
            <property name="calendarPopup">
             <bool>true</bool>
            </property>
@@ -49,9 +46,6 @@
          </item>
          <item>
           <widget class="QDateEdit" name="dateEditEnd">
-           <property name="displayFormat">
-            <string>dd.MM.yy</string>
-           </property>
            <property name="calendarPopup">
             <bool>true</bool>
            </property>
