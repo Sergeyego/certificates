@@ -110,3 +110,6 @@ macx:ICON = ico.icns
 
 RESOURCES += \
     res.qrc
+
+DISTFILES += \
+    ico.rc
