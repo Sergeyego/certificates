@@ -344,7 +344,7 @@
              <widget class="RestTableView" name="tableViewChemSrc">
               <property name="minimumSize">
                <size>
-                <width>375</width>
+                <width>385</width>
                 <height>0</height>
                </size>
               </property>
