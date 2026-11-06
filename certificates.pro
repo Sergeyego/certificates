@@ -109,5 +109,4 @@ win32:RC_FILE = ico.rc
 macx:ICON = ico.icns
 
 RESOURCES += \
-    formdoc/res.qrc \
     res.qrc
