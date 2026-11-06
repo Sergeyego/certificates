@@ -3,6 +3,8 @@
 
 #include <QWidget>
 #include <QFileDialog>
+#include <QHttpPart>
+#include <QBuffer>
 #include "rest/resttablemodel.h"
 
 namespace Ui {
@@ -27,6 +29,7 @@ private:
 private slots:
     void updVedFinished();
     void updImgFinished();
+    void onUploadFinished();
     void loadImg(QModelIndex index);
     void newImg();
     void delImg();

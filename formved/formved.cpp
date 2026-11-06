@@ -34,6 +34,7 @@ void FormVed::viewPix(const QPixmap &pix)
     } else {
         ui->labelSimb->setPixmap(pix.scaled(ui->labelSimb->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
     }
+    ui->cmdDel->setEnabled(!pix.isNull());
 }
 
 void FormVed::updVedFinished()
@@ -54,102 +55,147 @@ void FormVed::updImgFinished()
 
     if (err == QNetworkReply::OperationCanceledError) return;
 
+    // Игнорируем 404 — если картинки нет, просто показываем пустоту
+    if (err == QNetworkReply::ContentNotFoundError) {
+        int id_pix = reply->property("id_pix").toInt();
+        mapPix.insert(id_pix, QPixmap()); // кэшируем пустоту, чтобы не дергать сервер каждый раз
+        viewPix(QPixmap());
+        return;
+    }
+
     const QByteArray data = reply->readAll();
     if (err != QNetworkReply::NoError) {
         RestError::critical(tr("Ошибка"), errStr + "\n" + data);
+        viewPix(QPixmap());
         return;
     }
 
     QPixmap pix;
     pix.loadFromData(data);
-    if (!pix.isNull()){
-        int id_pix = reply->property("id_pix").toInt();
-        mapPix.insert(id_pix,pix);
-        int index = ui->tableViewVed->currentIndex().row();
-        if (index>=0){
-            int current_id_pix = modelVed->getModelData(index,"id_pos").toInt();
-            if (id_pix==current_id_pix){
-                viewPix(pix);
-            } else {
-                pix=mapPix.value(current_id_pix);
-                if (!pix.isNull()){
-                    viewPix(pix);
-                }
-            }
+    int id_pix = reply->property("id_pix").toInt();
+    mapPix.insert(id_pix, pix);
+
+    int index = ui->tableViewVed->currentIndex().row();
+    if (index >= 0) {
+        int current_id_pix = modelVed->getModelData(index,"id").toInt();
+        if (id_pix == current_id_pix) {
+            viewPix(pix);
         }
     }
 }
 
+void FormVed::onUploadFinished()
+{
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    if (!reply) return;
+
+    const auto err = reply->error();
+    const QString errStr = reply->errorString();
+    reply->deleteLater();
+
+    if (err == QNetworkReply::OperationCanceledError) return;
+
+    const QByteArray data = reply->readAll();
+    if (err != QNetworkReply::NoError) {
+        RestError::critical(tr("Ошибка"), errStr + "\n" + data);
+        viewPix(QPixmap());
+        return;
+    }
+    int id_pix = reply->property("id_pix").toInt();
+    mapPix.remove(id_pix);
+    loadImg(ui->tableViewVed->currentIndex());
+}
+
 void FormVed::loadImg(QModelIndex index)
 {
-    int id_pix=modelVed->getModelData(index.row(),"id_pos").toInt();
-    QPixmap pix=mapPix.value(id_pix);
-    if (!pix.isNull()){
-        viewPix(pix);
+    if (!index.isValid()){
+        viewPix(QPixmap());
+        return;
+    }
+    QVariant id = modelVed->getModelData(index.row(),"id");
+    if (id.isNull()){
+        viewPix(QPixmap());
+        return;
+    }
+    int id_pix=id.toInt();
+    if (mapPix.contains(id_pix)){
+        viewPix(mapPix.value(id_pix));
     } else {
-        QNetworkReply *reply = RestConnection::instance()->sendGet(RestConnection::instance()->buildUrl("api/pos-"+QString::number(id_pix)+".png"));
+        QNetworkReply *reply = RestConnection::instance()->sendGet(RestConnection::instance()->buildUrl("api/depimages/"+QString::number(id_pix)+".png"));
         reply->setProperty("id_pix",id_pix);
         connect(reply,SIGNAL(finished()),this,SLOT(updImgFinished()));
     }
-
-
-    //ui->labelSimb->setPixmap(QPixmap());
-    //int id=ui->tableViewVed->model()->data(ui->tableViewVed->model()->index(index.row(),0),Qt::EditRole).toInt();
-    //QPixmap pix;
-    /*pix.loadFromData(Rels::instance()->mapVedPix.value(id));
-    if (!pix.isNull()){
-        viewPix(pix);
-    }*/
-    ui->cmdDel->setEnabled(!pix.isNull());
 }
 
 void FormVed::newImg()
 {
+    int index = ui->tableViewVed->currentIndex().row();
+    if (index<0){
+        return;
+    }
+    QVariant id = modelVed->getModelData(index,"id");
+    if (id.isNull()){
+        return;
+    }
     QDir dir(QDir::homePath());
-    QString filename = QFileDialog::getOpenFileName(nullptr,QString::fromUtf8("Выберите изображение"),
+    QString filename = QFileDialog::getOpenFileName(nullptr,tr("Выберите изображение"),
                                                     dir.path(),
-                                                    QString::fromUtf8("Images (*.png *.xpm *.jpg *.jpeg *.bmp)"));
+                                                    tr("Images (*.png *.xpm *.jpg *.jpeg *.bmp)"));
     QImage img(filename);
     if (!img.isNull()){
-        /*int row=ui->tableViewVed->currentIndex().row();
-        int id=ui->tableViewVed->model()->data(ui->tableViewVed->model()->index(row,0),Qt::EditRole).toInt();
         QByteArray arr;
         QBuffer buffer(&arr);
         buffer.open(QIODevice::WriteOnly);
         img.save(&buffer,"PNG");
         buffer.close();
 
-        QSqlQuery query;
-        query.prepare("update zvd_ved set simb = :data where id= :id");
-        query.bindValue(":id",id);
-        query.bindValue(":data",arr);
-        if (query.exec()){
-            viewPix(QPixmap::fromImage(img));
-            ui->cmdDel->setEnabled(!img.isNull());
-            Rels::instance()->refreshVedPix();
-        } else {
-            QMessageBox::critical(this,"Error",query.lastError().text(),QMessageBox::Cancel);
-        }*/
+        QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType, this);
+
+        QHttpPart filePart;
+
+        filePart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"file\"; filename=\"img.png\""));
+        filePart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("image/png"));
+        filePart.setBody(arr);
+
+        multiPart->append(filePart);
+
+        QUrl url = RestConnection::instance()->buildUrl("api/depimages/"+id.toString()+".png");
+        QNetworkReply *reply = RestConnection::instance()->sendRequest(url,"PUT",multiPart);
+        reply->setProperty("id_pix",id);
+        multiPart->setParent(reply);
+        connect(reply,SIGNAL(finished()),this,SLOT(onUploadFinished()));
+
     }
 }
 
 void FormVed::delImg()
 {
-    /*int row=ui->tableViewVed->currentIndex().row();
-    int id=ui->tableViewVed->model()->data(ui->tableViewVed->model()->index(row,0),Qt::EditRole).toInt();
-    QSqlQuery query;
-    query.prepare("update zvd_ved set simb = NULL where id= :id");
-    query.bindValue(":id",id);
-    if (query.exec()){
-        viewPix(QPixmap());
-        Rels::instance()->refreshVedPix();
-    } else {
-        QMessageBox::critical(this,"Error",query.lastError().text(),QMessageBox::Cancel);
-    }*/
+    int row=ui->tableViewVed->currentIndex().row();
+    if (row<0){
+        return;
+    }
+    QString nam = modelVed->getModelData(row,"nam").toString();
+    int n = QMessageBox::question(this,tr("Подтвердите удаление"),tr("Подтверждаете уданение логотипа ")+nam+"?",QMessageBox::Yes,QMessageBox::No);
+    if (n==QMessageBox::Yes){
+        int id=modelVed->getModelData(row,"id").toInt();
+        QByteArray data;
+        bool ok = RestConnection::instance()->sendSyncRequest("api/depimages/"+QString::number(id)+".png","DELETE","{}",data);
+        if (ok){
+            mapPix.remove(id);
+            viewPix(QPixmap());
+        }
+    }
 }
 
 void FormVed::upd()
 {
+    if (sender()==ui->pushButtonUpd){
+        mapPix.clear();
+        QVector<RestTableModel*> arrMod;
+        arrMod.push_back(modelVed);
+        arrMod.push_back(modelDoc);
+        RelModels::instance()->updateRels(arrMod);
+    }
     modelVed->select();
     modelDoc->select();
 }

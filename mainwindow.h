@@ -10,6 +10,8 @@
 #include "formdoc/formdoc.h"
 #include "formmarkel/formmarkel.h"
 #include "formved/formved.h"
+#include "formsigpasport/formsigpasport.h"
+#include "checkform/checkform.h"
 #include "progressreportdialog/progressreportdialog.h"
 
 QT_BEGIN_NAMESPACE
@@ -33,6 +35,7 @@ private:
     void loadSettings();
     void saveSettings();
     void clearEmptyMenus();
+    CheckForm *checkForm;
 
 private slots:
     void updSite();
@@ -44,6 +47,8 @@ private slots:
     void newFormDoc();
     void newFormMarkEl();
     void newFormVed();
+    void newFormSigPasport();
+    void showCheckForm();
 
 signals:
     void findPart(int id_part, QString prefix);

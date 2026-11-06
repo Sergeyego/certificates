@@ -402,6 +402,10 @@ void FormPartEl::showLabels()
 
 void FormPartEl::showPartCertificate()
 {
+    if (!RestConnection::instance()->groups().contains(5)){
+        QMessageBox::critical(this,tr("Ошибка"),tr("Нет доступа!"),QMessageBox::Ok);
+        return;
+    }
     int currentIndex = ui->tableViewPart->currentIndex().row();
     if (!modelPart->rowCount() || currentIndex < 0) {
         return;
@@ -416,6 +420,10 @@ void FormPartEl::showPartCertificate()
 
 void FormPartEl::showShipCertificate(QModelIndex index)
 {
+    if (!RestConnection::instance()->groups().contains(5)){
+        QMessageBox::critical(this,tr("Ошибка"),tr("Нет доступа!"),QMessageBox::Ok);
+        return;
+    }
     int currentIndex = ui->tableViewPart->currentIndex().row();
     if (!modelPart->rowCount() || currentIndex < 0) {
         return;
@@ -433,6 +441,10 @@ void FormPartEl::showShipCertificate(QModelIndex index)
 
 void FormPartEl::createPasport()
 {
+    if (!RestConnection::instance()->groups().contains(5)){
+        QMessageBox::critical(this,tr("Ошибка"),tr("Нет доступа!"),QMessageBox::Ok);
+        return;
+    }
     int currentIndex = ui->tableViewPart->currentIndex().row();
     if (!modelPart->rowCount() || currentIndex < 0) {
         return;

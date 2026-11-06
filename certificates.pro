@@ -10,6 +10,7 @@ SOURCES += \
     certeditor/certdocument.cpp \
     certeditor/certeditor.cpp \
     certeditor/certprocessor.cpp \
+    checkform/checkform.cpp \
     dialogauthor/dialogauthor.cpp \
     dialogcopyvalel/dialogcopyvalel.cpp \
     dialoglabels/dialoglabels.cpp \
@@ -20,6 +21,7 @@ SOURCES += \
     formpartwire/formpartwire.cpp \
     formpartwire/modelwirepartimech.cpp \
     formship/formship.cpp \
+    formsigpasport/formsigpasport.cpp \
     formved/formved.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -46,6 +48,7 @@ HEADERS += \
     certeditor/certdocument.h \
     certeditor/certeditor.h \
     certeditor/certprocessor.h \
+    checkform/checkform.h \
     dialogauthor/dialogauthor.h \
     dialogcopyvalel/dialogcopyvalel.h \
     dialoglabels/dialoglabels.h \
@@ -56,6 +59,7 @@ HEADERS += \
     formpartwire/formpartwire.h \
     formpartwire/modelwirepartimech.h \
     formship/formship.h \
+    formsigpasport/formsigpasport.h \
     formved/formved.h \
     mainwindow.h \
     pasportmanager.h \
@@ -80,6 +84,7 @@ HEADERS += \
 
 FORMS += \
     certeditor/certeditor.ui \
+    checkform/checkform.ui \
     dialogauthor/dialogauthor.ui \
     dialogcopyvalel/dialogcopyvalel.ui \
     dialoglabels/dialoglabels.ui \
@@ -88,6 +93,7 @@ FORMS += \
     formpartel/formpartel.ui \
     formpartwire/formpartwire.ui \
     formship/formship.ui \
+    formsigpasport/formsigpasport.ui \
     formved/formved.ui \
     mainwindow.ui \
     progressreportdialog/progressreportdialog.ui \

@@ -41,6 +41,7 @@
      <string>Отгрузки</string>
     </property>
     <addaction name="actionShipCert"/>
+    <addaction name="actionCheckCode"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -54,7 +55,7 @@
     </property>
     <addaction name="actionMarkEl"/>
     <addaction name="actionVed"/>
-    <addaction name="action_7"/>
+    <addaction name="actionSigPasport"/>
    </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
@@ -106,9 +107,14 @@
     <string>Ведомства и виды документов</string>
    </property>
   </action>
-  <action name="action_7">
+  <action name="actionSigPasport">
    <property name="text">
     <string>Подписанты паспорта качества</string>
+   </property>
+  </action>
+  <action name="actionCheckCode">
+   <property name="text">
+    <string>Проверить код</string>
    </property>
   </action>
  </widget>

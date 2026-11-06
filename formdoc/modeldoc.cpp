@@ -10,14 +10,32 @@ ModelDoc::ModelDoc(QObject *parent) : RestTableModel("zvd_sert",parent)
 QVariant ModelDoc::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid()) return QVariant();
-    if (role==Qt::BackgroundRole){
-        if (fileExist(index.row()) && isActive(index.row())){
-            return QVariant(QColor(170,255,170));
+
+    if (role == Qt::BackgroundRole) {
+        // 1. Проверяем, является ли текущая колонка датой окончания
+        const int endCol = columnIndex("dat_end");
+        if (index.column() == endCol) {
+            QDate end = getModelData(index.row(), "dat_end").toDate();
+
+            // Если дата окончания задана и она еще не прошла
+            if (!end.isNull()) {
+                QDate current = QDate::currentDate();
+                // Если до конца действия осталось 30 дней или меньше
+                if (end >= current && current.daysTo(end) <= 60) {
+                    return QVariant(QColor(255, 180, 100)); // Оранжевый (в тон остальным)
+                }
+            }
+        }
+
+        // 2. Стандартная окраска всей строки (зеленый/красный)
+        if (fileExist(index.row()) && isActive(index.row())) {
+            return QVariant(QColor(170, 255, 170)); // Зеленый
         } else {
-            return QVariant(QColor(255,170,170));
+            return QVariant(QColor(255, 170, 170)); // Красный
         }
     }
-    return RestTableModel::data(index,role);
+
+    return RestTableModel::data(index, role);
 }
 
 bool ModelDoc::fileExist(int ind) const
@@ -31,16 +49,20 @@ bool ModelDoc::fileExist(int ind) const
 }
 
 bool ModelDoc::isActive(int ind) const
-{ 
+{
     if (ind < 0 || ind >= rowCount()) return false;
 
-    QDate current=QDate::currentDate();
-    QDate beg=this->getModelData(ind,"dat_beg").toDate();
-    QDate end=this->getModelData(ind,"dat_end").toDate();
+    QDate current = QDate::currentDate();
+    QDate beg = this->getModelData(ind, "dat_beg").toDate();
+    QDate end = this->getModelData(ind, "dat_end").toDate();
 
-    if (end.isNull()) end = current.addDays(1);
+    // Если дата начала не указана, считаем, что документ действует всегда
+    if (beg.isNull()) beg = QDate(1900, 1, 1);
 
-    return (current>=beg && current<=end);
+    // Если дата окончания не указана, документ действует бессрочно
+    if (end.isNull()) end = QDate(9999, 12, 31);
+
+    return (current >= beg && current <= end);
 }
 
 void ModelDoc::refresh(bool activeOnly)

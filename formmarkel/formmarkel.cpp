@@ -146,7 +146,11 @@ void FormMarkEl::savesettings()
 
 void FormMarkEl::setCurrentPix(const QPixmap &pix)
 {
-    ui->labelPix->setPixmap(pix.scaled(ui->labelPix->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    if (pix.isNull()){
+        ui->labelPix->setPixmap(pix);
+    } else {
+        ui->labelPix->setPixmap(pix.scaled(ui->labelPix->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    }
 }
 
 void FormMarkEl::configureVarRels(RestTableModel *model, int id_el, int id_var)
@@ -246,9 +250,9 @@ void FormMarkEl::refreshCont(int index)
     modelProvol->select();
 
     int id_pix=mapper->modelData(index,"id_pos").toInt();
-    QPixmap pix=mapPix.value(id_pix);
-    if (!pix.isNull()){
-        setCurrentPix(pix);
+
+    if (mapPix.contains(id_pix)){
+        setCurrentPix(mapPix.value(id_pix));
     } else {
         QNetworkReply *reply = RestConnection::instance()->sendGet(RestConnection::instance()->buildUrl("api/pos-"+QString::number(id_pix)+".png"));
         reply->setProperty("id_pix",id_pix);
@@ -272,6 +276,21 @@ void FormMarkEl::updImgFinished()
 
     if (err == QNetworkReply::OperationCanceledError) return;
 
+    // Обработка 404: картинки нет, кэшируем пустоту
+    if (err == QNetworkReply::ContentNotFoundError) {
+        int id_pix = reply->property("id_pix").toInt();
+        mapPix.insert(id_pix, QPixmap()); // Сохраняем пустой pixmap
+
+        int index = mapper->currentIndex();
+        if (index >= 0) {
+            int current_id_pix = mapper->modelData(index, "id_pos").toInt();
+            if (id_pix == current_id_pix) {
+                setCurrentPix(QPixmap()); // Очищаем отображение
+            }
+        }
+        return;
+    }
+
     const QByteArray data = reply->readAll();
     if (err != QNetworkReply::NoError) {
         RestError::critical(tr("Ошибка"), errStr + "\n" + data);
@@ -282,16 +301,17 @@ void FormMarkEl::updImgFinished()
     pix.loadFromData(data);
     if (!pix.isNull()){
         int id_pix = reply->property("id_pix").toInt();
-        mapPix.insert(id_pix,pix);
+        mapPix.insert(id_pix, pix);
+
         int index = mapper->currentIndex();
-        if (index>=0){
+        if (index >= 0){
             int current_id_pix = mapper->modelData(index,"id_pos").toInt();
-            if (id_pix==current_id_pix){
+            if (id_pix == current_id_pix){
                 setCurrentPix(pix);
             } else {
-                pix=mapPix.value(current_id_pix);
-                if (!pix.isNull()){
-                    setCurrentPix(pix);
+                // ИСПОЛЬЗУЕМ contains ВМЕСТО !isNull
+                if (mapPix.contains(current_id_pix)) {
+                    setCurrentPix(mapPix.value(current_id_pix));
                 }
             }
         }

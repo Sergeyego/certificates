@@ -288,6 +288,10 @@ void FormPartWire::copyTu()
 
 void FormPartWire::showShipCertificate(QModelIndex index)
 {
+    if (!RestConnection::instance()->groups().contains(5)){
+        QMessageBox::critical(this,tr("Ошибка"),tr("Нет доступа!"),QMessageBox::Ok);
+        return;
+    }
     int currentIndex = ui->tableViewPart->currentIndex().row();
     if (!modelPartWire->rowCount() || currentIndex < 0) {
         return;
@@ -305,6 +309,10 @@ void FormPartWire::showShipCertificate(QModelIndex index)
 
 void FormPartWire::showPartCertificate()
 {
+    if (!RestConnection::instance()->groups().contains(5)){
+        QMessageBox::critical(this,tr("Ошибка"),tr("Нет доступа!"),QMessageBox::Ok);
+        return;
+    }
     int currentIndex = ui->tableViewPart->currentIndex().row();
     if (!modelPartWire->rowCount() || currentIndex < 0) {
         return;

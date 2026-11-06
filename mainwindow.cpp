@@ -8,16 +8,22 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     tabManager = new TabManager(ui->tabWidget,this);
 
-    actAction(ui->actionPartEl,&MainWindow::newFormPartEl,1);
-    actAction(ui->actionPartWire,&MainWindow::newFormPartWire,1);
-    actAction(ui->actionShipCert,&MainWindow::newFormShip,1);
-    actAction(ui->actionDoc,&MainWindow::newFormDoc,1);
-    actAction(ui->actionMarkEl,&MainWindow::newFormMarkEl,1);
-    actAction(ui->actionVed,&MainWindow::newFormVed,1);
+    checkForm = new CheckForm(this);
+    checkForm->setWindowFlags(Qt::Window);
+
+    actAction(ui->actionPartEl,&MainWindow::newFormPartEl,3);
+    actAction(ui->actionPartWire,&MainWindow::newFormPartWire,3);
+    actAction(ui->actionShipCert,&MainWindow::newFormShip,5);
+    actAction(ui->actionDoc,&MainWindow::newFormDoc,5);
+    actAction(ui->actionMarkEl,&MainWindow::newFormMarkEl,5);
+    actAction(ui->actionVed,&MainWindow::newFormVed,5);
+    actAction(ui->actionSigPasport,&MainWindow::newFormSigPasport,5);
 
     tabManager->loadSettings();
     loadSettings();
     clearEmptyMenus();
+
+    connect(ui->actionCheckCode,SIGNAL(triggered(bool)),this,SLOT(showCheckForm()));
 }
 
 MainWindow::~MainWindow()
@@ -152,4 +158,19 @@ void MainWindow::newFormVed()
     if (!tabManager->exist(sender())){
         tabManager->addSubWindow(new FormVed(),sender());
     }
+}
+
+void MainWindow::newFormSigPasport()
+{
+    if (!tabManager->exist(sender())){
+        tabManager->addSubWindow(new FormSigPasport(),sender());
+    }
+}
+
+void MainWindow::showCheckForm()
+{
+    checkForm->showNormal();
+    checkForm->show();
+    checkForm->raise();
+    checkForm->activateWindow();
 }
