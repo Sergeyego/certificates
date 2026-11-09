@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     a.setWindowIcon(QIcon(":/images/ico.ico"));
-#if defined(Q_OS_MACOS) || defined(Q_OS_MAC)
+#if defined(Q_OS_WIN) || defined(Q_OS_MACOS) || defined(Q_OS_MAC)
     QApplication::setStyle(QStyleFactory::create("Fusion"));
 #endif
     RestLogin d(QObject::tr("Результаты испытаний и сертификаты качества"));
